@@ -1,0 +1,21 @@
+# Production Docker Compose for Amar Pathagar Frontend
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: amar-pathagar-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    restart: unless-stopped
+    networks:
+      - amar-pathagar-network
+
+networks:
+  amar-pathagar-network:
+    driver: bridge
