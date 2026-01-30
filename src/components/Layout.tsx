@@ -13,14 +13,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { toasts, removeToast } = useToastStore()
   const router = useRouter()
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Initialize mobile state only once
   useEffect(() => {
     const mobile = window.innerWidth < 1024
     setIsMobile(mobile)
     setSidebarOpen(!mobile) // Start collapsed on mobile, expanded on desktop
+    setIsInitialized(true)
   }, [])
 
   // Only track window resize for mobile detection, don't change sidebar state
@@ -56,6 +58,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     )
+  }
+
+  // Prevent flash of incorrect sidebar state during initialization
+  if (!isInitialized) {
+    return null
   }
 
   return (
