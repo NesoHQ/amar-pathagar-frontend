@@ -4,9 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
+import { ToastContainer } from './Toast'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { toasts, removeToast } = useToastStore()
   const router = useRouter()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -20,6 +23,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col min-h-screen old-paper-texture">
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      
       {/* Classic Header */}
       <header className="bg-white border-b-4 border-old-ink shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4">

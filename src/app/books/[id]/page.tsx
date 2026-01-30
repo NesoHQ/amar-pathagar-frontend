@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { booksAPI, ideasAPI, reviewsAPI } from '@/lib/api'
 
 export default function BookDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { isAuthenticated, user, _hasHydrated } = useAuthStore()
+  const { success, error, warning } = useToastStore()
   const [book, setBook] = useState<any>(null)
   const [ideas, setIdeas] = useState<any[]>([])
   const [showIdeaForm, setShowIdeaForm] = useState(false)
@@ -46,15 +48,15 @@ export default function BookDetailPage() {
 
   const handleRequest = async () => {
     if (!user || user.success_score < 20) {
-      alert('Your success score must be at least 20 to request books.')
+      warning('Your success score must be at least 20 to request books.')
       return
     }
     try {
       await booksAPI.request(params.id as string)
-      alert('Book requested successfully!')
+      success('Book requested successfully!')
       loadBook()
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to request book')
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to request book')
     }
   }
 
@@ -68,18 +70,19 @@ export default function BookDetailPage() {
       setIdeaForm({ title: '', content: '' })
       setShowIdeaForm(false)
       loadIdeas()
-      alert('Idea posted! +3 points')
-    } catch (error) {
-      alert('Failed to post idea')
+      success('Idea posted! +3 points')
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to post idea')
     }
   }
 
   const handleVote = async (ideaId: string, voteType: 'upvote' | 'downvote') => {
     try {
       await ideasAPI.vote(ideaId, voteType)
+      success('Vote recorded!')
       loadIdeas()
-    } catch (error) {
-      console.error('Failed to vote:', error)
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to vote')
     }
   }
 

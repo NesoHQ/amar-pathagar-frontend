@@ -5,20 +5,21 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { authAPI } from '@/lib/api'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
+import { ToastContainer } from '@/components/Toast'
 
 export default function LoginPage() {
   const router = useRouter()
   const { setAuth } = useAuthStore()
+  const { toasts, removeToast, error: showError, success } = useToastStore()
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   })
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setLoading(true)
 
     try {
@@ -26,9 +27,10 @@ export default function LoginPage() {
       const { data } = response.data
       const { user, access_token } = data
       setAuth(user, access_token)
+      success('Login successful! Welcome back.')
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed')
+      showError(err.response?.data?.error || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -36,6 +38,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -47,12 +52,6 @@ export default function LoginPage() {
         {/* Login Form */}
         <div className="classic-card">
           <h2 className="classic-heading text-2xl">Login</h2>
-
-          {error && (
-            <div className="mb-4 p-3 border-2 border-red-600 bg-red-50 text-red-600 font-bold">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

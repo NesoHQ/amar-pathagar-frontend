@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { booksAPI, bookmarksAPI } from '@/lib/api'
 
 interface Book {
@@ -21,6 +22,7 @@ interface Book {
 export default function BooksPage() {
   const router = useRouter()
   const { isAuthenticated, _hasHydrated } = useAuthStore()
+  const { success, error } = useToastStore()
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -54,9 +56,9 @@ export default function BooksPage() {
   const handleBookmark = async (bookId: string, type: string) => {
     try {
       await bookmarksAPI.create({ book_id: bookId, bookmark_type: type })
-      alert(`Book ${type}ed successfully!`)
-    } catch (error) {
-      console.error('Failed to bookmark:', error)
+      success(`Book ${type}ed successfully!`)
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to bookmark book')
     }
   }
 

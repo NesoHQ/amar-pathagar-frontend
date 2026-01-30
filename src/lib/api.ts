@@ -41,6 +41,7 @@ api.interceptors.response.use(
         window.location.href = '/login'
       }
     }
+    // Don't show alert, let components handle errors
     return Promise.reject(error)
   }
 )
