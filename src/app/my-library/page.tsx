@@ -14,10 +14,11 @@ export default function MyLibraryPage() {
   const { success, error } = useToastStore()
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('all')
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; bookId: string; bookTitle: string }>({
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; bookId: string; bookTitle: string; bookmarkType: string }>({
     isOpen: false,
     bookId: '',
-    bookTitle: ''
+    bookTitle: '',
+    bookmarkType: ''
   })
 
   useEffect(() => {
@@ -39,20 +40,20 @@ export default function MyLibraryPage() {
     }
   }
 
-  const openDeleteModal = (bookId: string, bookTitle: string) => {
-    setDeleteModal({ isOpen: true, bookId, bookTitle })
+  const openDeleteModal = (bookId: string, bookTitle: string, bookmarkType: string) => {
+    setDeleteModal({ isOpen: true, bookId, bookTitle, bookmarkType })
   }
 
   const closeDeleteModal = () => {
-    setDeleteModal({ isOpen: false, bookId: '', bookTitle: '' })
+    setDeleteModal({ isOpen: false, bookId: '', bookTitle: '', bookmarkType: '' })
   }
 
   const confirmDeleteBookmark = async () => {
-    const { bookId } = deleteModal
+    const { bookId, bookmarkType } = deleteModal
     closeDeleteModal()
     
     try {
-      await bookmarksAPI.delete(bookId, '')
+      await bookmarksAPI.delete(bookId, bookmarkType)
       success('Bookmark removed successfully!')
       loadBookmarks()
     } catch (err: any) {
@@ -144,7 +145,7 @@ export default function MyLibraryPage() {
                         View
                       </button>
                       <button
-                        onClick={() => openDeleteModal(bookmark.book_id, bookmark.book?.title || 'this book')}
+                        onClick={() => openDeleteModal(bookmark.book_id, bookmark.book?.title || 'this book', bookmark.bookmark_type)}
                         className="flex-1 sm:flex-none px-4 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs md:text-sm
                                  hover:bg-red-600 hover:text-white transition-all"
                         title="Remove bookmark"
@@ -166,7 +167,7 @@ export default function MyLibraryPage() {
         onClose={closeDeleteModal}
         onConfirm={confirmDeleteBookmark}
         title="Remove Bookmark"
-        message={`Are you sure you want to remove "${deleteModal.bookTitle}" from your bookmarks? This action cannot be undone.`}
+        message={`Are you sure you want to remove "${deleteModal.bookTitle}" from your ${deleteModal.bookmarkType} list? This action cannot be undone.`}
         confirmText="Remove"
         cancelText="Cancel"
         type="danger"
