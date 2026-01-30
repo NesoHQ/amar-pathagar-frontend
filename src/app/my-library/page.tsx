@@ -3,14 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
+import Modal from '@/components/Modal'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { bookmarksAPI } from '@/lib/api'
 
 export default function MyLibraryPage() {
   const router = useRouter()
   const { isAuthenticated, user, _hasHydrated } = useAuthStore()
+  const { success, error } = useToastStore()
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('all')
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; bookId: string; bookTitle: string }>({
+    isOpen: false,
+    bookId: '',
+    bookTitle: ''
+  })
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -25,9 +33,30 @@ export default function MyLibraryPage() {
       const response = await bookmarksAPI.getAll()
       const bookmarksData = response.data.data || response.data || []
       setBookmarks(Array.isArray(bookmarksData) ? bookmarksData : [])
-    } catch (error) {
-      console.error('Failed to load bookmarks:', error)
+    } catch (err) {
+      console.error('Failed to load bookmarks:', err)
       setBookmarks([])
+    }
+  }
+
+  const openDeleteModal = (bookId: string, bookTitle: string) => {
+    setDeleteModal({ isOpen: true, bookId, bookTitle })
+  }
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, bookId: '', bookTitle: '' })
+  }
+
+  const confirmDeleteBookmark = async () => {
+    const { bookId } = deleteModal
+    closeDeleteModal()
+    
+    try {
+      await bookmarksAPI.delete(bookId, '')
+      success('Bookmark removed successfully!')
+      loadBookmarks()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to remove bookmark')
     }
   }
 
@@ -107,12 +136,22 @@ export default function MyLibraryPage() {
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => router.push(`/books/${bookmark.book_id}`)}
-                      className="classic-button-secondary text-xs md:text-sm w-full sm:w-auto"
-                    >
-                      View
-                    </button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={() => router.push(`/books/${bookmark.book_id}`)}
+                        className="flex-1 sm:flex-none classic-button-secondary text-xs md:text-sm px-4 py-2"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(bookmark.book_id, bookmark.book?.title || 'this book')}
+                        className="flex-1 sm:flex-none px-4 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs md:text-sm
+                                 hover:bg-red-600 hover:text-white transition-all"
+                        title="Remove bookmark"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -120,6 +159,18 @@ export default function MyLibraryPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDeleteBookmark}
+        title="Remove Bookmark"
+        message={`Are you sure you want to remove "${deleteModal.bookTitle}" from your bookmarks? This action cannot be undone.`}
+        confirmText="Remove"
+        cancelText="Cancel"
+        type="danger"
+      />
     </Layout>
   )
 }
