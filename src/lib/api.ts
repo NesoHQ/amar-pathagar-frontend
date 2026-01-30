@@ -78,7 +78,7 @@ export const userAPI = {
 export const ideasAPI = {
   create: (data: { book_id: string; title: string; content: string }) =>
     api.post('/ideas', data),
-  getByBook: (bookId: string) => api.get(`/books/${bookId}/ideas`),
+  getByBook: (bookId: string) => api.get(`/ideas/book/${bookId}`),
   vote: (ideaId: string, voteType: 'upvote' | 'downvote') =>
     api.post(`/ideas/${ideaId}/vote`, { vote_type: voteType }),
 }
