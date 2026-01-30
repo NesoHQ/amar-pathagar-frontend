@@ -252,14 +252,14 @@ export default function BookDetailPage() {
           </div>
         </div>
 
-        {/* Reading Ideas Section - Compact */}
+        {/* Reading Ideas Section - Thread View */}
         <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
           <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xl">💡</span>
-              <h2 className="text-xl font-bold uppercase tracking-wider">Reading Ideas</h2>
+              <span className="text-xl">💬</span>
+              <h2 className="text-xl font-bold uppercase tracking-wider">Discussion Thread</h2>
               <span className="px-2 py-0.5 bg-old-paper text-old-ink text-xs font-bold">
-                {ideas.length}
+                {ideas.length} {ideas.length === 1 ? 'Post' : 'Posts'}
               </span>
             </div>
             <button
@@ -267,31 +267,37 @@ export default function BookDetailPage() {
               className="px-4 py-2 border-2 border-old-paper text-old-paper font-bold uppercase text-xs
                        hover:bg-old-paper hover:text-old-ink transition-all"
             >
-              {showIdeaForm ? 'Cancel' : '+ Add Idea'}
+              {showIdeaForm ? 'Cancel' : '+ New Post'}
             </button>
           </div>
 
           <div className="p-4 md:p-6">
             {showIdeaForm && (
-              <form onSubmit={handleSubmitIdea} className="mb-6 p-4 border-2 border-old-border bg-old-paper">
-                <div className="space-y-3">
+              <div className="mb-6 border-2 border-old-ink bg-old-paper p-4">
+                <div className="flex items-center gap-2 mb-3 pb-3 border-b-2 border-old-border">
+                  <span className="text-2xl">✍️</span>
+                  <p className="font-bold uppercase text-sm">New Discussion Post</p>
+                </div>
+                <form onSubmit={handleSubmitIdea} className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Title</label>
+                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Subject</label>
                     <input
                       type="text"
                       value={ideaForm.title}
                       onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
                       className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
+                      placeholder="Enter discussion topic..."
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Your Thoughts</label>
+                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Message</label>
                     <textarea
                       value={ideaForm.content}
                       onChange={(e) => setIdeaForm({ ...ideaForm, content: e.target.value })}
                       className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
-                      rows={3}
+                      rows={4}
+                      placeholder="Share your thoughts about this book..."
                       required
                     />
                   </div>
@@ -300,37 +306,110 @@ export default function BookDetailPage() {
                     className="px-6 py-2 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-xs
                              hover:bg-white hover:text-old-ink transition-all"
                   >
-                    Post Idea (+3 Points)
+                    Post Message (+3 Points)
                   </button>
-                </div>
-              </form>
+                </form>
+              </div>
             )}
 
             {ideas.length === 0 ? (
-              <p className="text-center text-old-grey py-8 text-sm">No ideas yet. Be the first to share!</p>
+              <div className="text-center py-12 border-2 border-dashed border-old-border">
+                <span className="text-5xl mb-3 block">💭</span>
+                <p className="text-old-grey text-sm uppercase tracking-wider">No posts yet</p>
+                <p className="text-old-grey text-xs mt-1">Be the first to start the discussion!</p>
+              </div>
             ) : (
-              <div className="space-y-3">
-                {ideas.map((idea) => (
-                  <div key={idea.id} className="border-2 border-old-border p-4 bg-gradient-to-r from-white to-gray-50 hover:border-old-ink transition-all">
-                    <h3 className="font-bold uppercase text-sm mb-2">{idea.title}</h3>
-                    <p className="text-old-grey text-sm mb-3 leading-relaxed">{idea.content}</p>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-old-grey uppercase">
-                        by {idea.user?.username || 'Anonymous'}
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleVote(idea.id, 'upvote')}
-                          className="px-3 py-1 border border-old-ink hover:bg-green-50 hover:border-green-600 transition-all"
-                        >
-                          👍 {idea.upvotes}
-                        </button>
-                        <button
-                          onClick={() => handleVote(idea.id, 'downvote')}
-                          className="px-3 py-1 border border-old-ink hover:bg-red-50 hover:border-red-600 transition-all"
-                        >
-                          👎 {idea.downvotes}
-                        </button>
+              <div className="space-y-0">
+                {ideas.map((idea, index) => (
+                  <div 
+                    key={idea.id} 
+                    className={`border-2 border-old-border hover:bg-old-paper transition-all ${
+                      index !== 0 ? '-mt-0.5' : ''
+                    }`}
+                  >
+                    {/* Thread Header */}
+                    <div className="bg-gradient-to-r from-gray-50 to-white p-3 border-b border-old-border">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1">
+                          {/* Avatar */}
+                          <div className="w-10 h-10 border-2 border-old-ink bg-old-paper flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg">👤</span>
+                          </div>
+                          
+                          {/* Post Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold uppercase text-sm mb-1 leading-tight">
+                              {idea.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-old-grey">
+                              <span className="font-bold">
+                                {idea.user?.username || 'Anonymous'}
+                              </span>
+                              <span>•</span>
+                              <span>
+                                {new Date(idea.created_at || Date.now()).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              <span>•</span>
+                              <span className="text-xs">
+                                Post #{index + 1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Vote Buttons - Compact */}
+                        <div className="flex gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => handleVote(idea.id, 'upvote')}
+                            className="px-2 py-1 border border-old-border hover:bg-green-50 hover:border-green-600 transition-all text-xs"
+                            title="Upvote"
+                          >
+                            👍 {idea.upvotes}
+                          </button>
+                          <button
+                            onClick={() => handleVote(idea.id, 'downvote')}
+                            className="px-2 py-1 border border-old-border hover:bg-red-50 hover:border-red-600 transition-all text-xs"
+                            title="Downvote"
+                          >
+                            👎 {idea.downvotes}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Thread Content */}
+                    <div className="p-4">
+                      <p className="text-sm text-old-grey leading-relaxed whitespace-pre-wrap">
+                        {idea.content}
+                      </p>
+                    </div>
+
+                    {/* Thread Footer */}
+                    <div className="px-4 py-2 bg-gray-50 border-t border-old-border flex items-center justify-between text-xs text-old-grey">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1">
+                          <span>💬</span>
+                          <span>0 replies</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span>👁️</span>
+                          <span>0 views</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 border ${
+                          idea.upvotes - idea.downvotes > 0 
+                            ? 'border-green-600 text-green-600' 
+                            : idea.upvotes - idea.downvotes < 0 
+                            ? 'border-red-600 text-red-600' 
+                            : 'border-old-border text-old-grey'
+                        }`}>
+                          Score: {idea.upvotes - idea.downvotes}
+                        </span>
                       </div>
                     </div>
                   </div>
