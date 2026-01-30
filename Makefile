@@ -27,7 +27,7 @@ dev: ## Start development server (local)
 
 .PHONY: dev-docker
 dev-docker: ## Start development server (Docker with hot reload)
-	docker compose -f docker-compose.dev.yml up -d
+	docker-compose -f docker-compose.dev.yml up -d
 	@echo "✅ Development server started"
 	@echo "📝 Frontend: http://localhost:3000"
 	@echo "📋 Logs: make logs"
@@ -39,16 +39,16 @@ install: ## Install dependencies
 
 .PHONY: logs
 logs: ## Follow application logs (Docker)
-	docker compose -f docker-compose.dev.yml logs -f frontend
+	docker-compose -f docker-compose.dev.yml logs -f frontend
 
 .PHONY: restart
 restart: ## Restart development server (Docker)
-	docker compose -f docker-compose.dev.yml restart frontend
+	docker-compose -f docker-compose.dev.yml restart frontend
 	@echo "✅ Frontend restarted"
 
 .PHONY: stop
 stop: ## Stop development server (Docker)
-	docker compose -f docker-compose.dev.yml stop
+	docker-compose -f docker-compose.dev.yml stop
 
 # --------------------------------------------------
 # Production
@@ -64,13 +64,13 @@ start: ## Start production server (local)
 
 .PHONY: up
 up: ## Start production server (Docker)
-	docker compose -f docker-compose.yml up -d --build
+	docker-compose -f docker-compose.yml up -d --build
 	@echo "✅ Production server started"
 
 .PHONY: down
 down: ## Stop and remove all containers
-	docker compose -f docker-compose.yml down
-	docker compose -f docker-compose.dev.yml down
+	docker-compose -f docker-compose.yml down
+	docker-compose -f docker-compose.dev.yml down
 	@echo "✅ All containers stopped and removed"
 
 # --------------------------------------------------
@@ -91,16 +91,16 @@ type-check: ## Run TypeScript type checking
 # --------------------------------------------------
 .PHONY: ps
 ps: ## Show running containers
-	docker compose -f docker-compose.dev.yml ps
+	docker-compose -f docker-compose.dev.yml ps
 
 .PHONY: shell
 shell: ## Open shell in frontend container
-	docker compose -f docker-compose.dev.yml exec frontend sh
+	docker-compose -f docker-compose.dev.yml exec frontend sh
 
 .PHONY: clean
 clean: ## Clean up containers, volumes, and build artifacts
-	docker compose -f docker-compose.yml down -v
-	docker compose -f docker-compose.dev.yml down -v
+	docker-compose -f docker-compose.yml down -v
+	docker-compose -f docker-compose.dev.yml down -v
 	rm -rf .next
 	rm -rf node_modules
 	@echo "✅ Cleanup complete"
