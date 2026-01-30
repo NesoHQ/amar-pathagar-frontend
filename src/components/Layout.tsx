@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
@@ -9,6 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -22,21 +23,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Classic Header */}
       <header className="bg-white border-b-4 border-old-ink shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex justify-between items-center">
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center space-x-3">
               <div className="text-4xl">📚</div>
               <div>
-                <h1 className="text-2xl font-bold uppercase tracking-wider text-old-ink">
+                <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider text-old-ink">
                   Amar Pathagar
                 </h1>
-                <p className="text-xs text-old-grey uppercase tracking-widest">Community Library</p>
+                <p className="text-xs text-old-grey uppercase tracking-widest hidden sm:block">Community Library</p>
               </div>
             </Link>
 
-            {/* Navigation */}
+            {/* Desktop Navigation */}
             {isAuthenticated && (
-              <nav className="flex flex-wrap justify-center gap-1">
+              <nav className="hidden lg:flex space-x-1">
                 <NavLink href="/dashboard" active={isActive('/dashboard')}>Dashboard</NavLink>
                 <NavLink href="/books" active={isActive('/books')}>Books</NavLink>
                 <NavLink href="/my-library" active={isActive('/my-library')}>My Library</NavLink>
@@ -48,38 +49,103 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </nav>
             )}
 
-            {/* User Info */}
+            {/* Desktop User Info */}
             {isAuthenticated && user && (
-              <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-4">
                 <div className="text-right">
-                  <div className="font-bold text-old-ink">{user.full_name || user.username}</div>
+                  <div className="font-bold text-old-ink text-sm">{user.full_name || user.username}</div>
                   <div className="text-xs text-old-grey uppercase">
-                    Score: {user.success_score} • {user.role}
+                    Score: {user.success_score}
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-sm
+                  className="px-4 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-xs
                            hover:bg-old-ink hover:text-old-paper transition-colors"
                 >
                   Logout
                 </button>
               </div>
             )}
+
+            {/* Mobile Menu Button */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 border-2 border-old-ink text-old-ink hover:bg-old-ink hover:text-old-paper transition-colors"
+                aria-label="Toggle menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            )}
           </div>
+
+          {/* Mobile Menu */}
+          {isAuthenticated && mobileMenuOpen && (
+            <div className="lg:hidden mt-4 pt-4 border-t-2 border-old-border">
+              {/* Mobile User Info */}
+              {user && (
+                <div className="mb-4 pb-4 border-b-2 border-old-border">
+                  <div className="font-bold text-old-ink">{user.full_name || user.username}</div>
+                  <div className="text-xs text-old-grey uppercase mt-1">
+                    Score: {user.success_score} • {user.role}
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Navigation */}
+              <nav className="flex flex-col space-y-2">
+                <MobileNavLink href="/dashboard" active={isActive('/dashboard')} onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </MobileNavLink>
+                <MobileNavLink href="/books" active={isActive('/books')} onClick={() => setMobileMenuOpen(false)}>
+                  Books
+                </MobileNavLink>
+                <MobileNavLink href="/my-library" active={isActive('/my-library')} onClick={() => setMobileMenuOpen(false)}>
+                  My Library
+                </MobileNavLink>
+                <MobileNavLink href="/leaderboard" active={isActive('/leaderboard')} onClick={() => setMobileMenuOpen(false)}>
+                  Leaderboard
+                </MobileNavLink>
+                <MobileNavLink href="/donations" active={isActive('/donations')} onClick={() => setMobileMenuOpen(false)}>
+                  Donations
+                </MobileNavLink>
+                {user?.role === 'admin' && (
+                  <MobileNavLink href="/admin" active={isActive('/admin')} onClick={() => setMobileMenuOpen(false)}>
+                    Admin
+                  </MobileNavLink>
+                )}
+              </nav>
+
+              {/* Mobile Logout */}
+              <button
+                onClick={handleLogout}
+                className="w-full mt-4 px-4 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-sm
+                         hover:bg-old-ink hover:text-old-paper transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content - Flex Grow */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {children}
       </main>
 
       {/* Sticky Footer */}
       <footer className="bg-white border-t-4 border-old-ink mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
           <div className="text-center">
-            <p className="text-old-grey text-sm uppercase tracking-wider">
+            <p className="text-old-grey text-xs md:text-sm uppercase tracking-wider">
               Est. 2026 • A Trust-Based Reading Network
             </p>
             <p className="text-old-grey text-xs mt-2">
@@ -96,10 +162,26 @@ function NavLink({ href, active, children }: { href: string; active: boolean; ch
   return (
     <Link
       href={href}
-      className={`px-4 py-2 font-bold uppercase text-sm tracking-wider transition-colors
+      className={`px-3 py-2 font-bold uppercase text-xs tracking-wider transition-colors whitespace-nowrap
         ${active 
           ? 'bg-old-ink text-old-paper' 
           : 'text-old-ink hover:bg-old-grey hover:text-old-paper'
+        }`}
+    >
+      {children}
+    </Link>
+  )
+}
+
+function MobileNavLink({ href, active, children, onClick }: { href: string; active: boolean; children: React.ReactNode; onClick: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`px-4 py-3 font-bold uppercase text-sm tracking-wider transition-colors border-2
+        ${active 
+          ? 'bg-old-ink text-old-paper border-old-ink' 
+          : 'text-old-ink border-old-border hover:bg-old-ink hover:text-old-paper hover:border-old-ink'
         }`}
     >
       {children}
