@@ -120,6 +120,7 @@ export default function BooksTab({
               <span className={`px-2 py-1 font-bold uppercase ${
                 book.status === 'available' ? 'bg-green-100 text-green-700' :
                 book.status === 'reading' ? 'bg-blue-100 text-blue-700' :
+                book.status === 'on_hold' ? 'bg-yellow-100 text-yellow-700' :
                 'bg-orange-100 text-orange-700'
               }`}>
                 {book.status}

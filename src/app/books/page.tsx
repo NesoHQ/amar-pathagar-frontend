@@ -154,6 +154,7 @@ function BookCard({ book, onBookmark }: { book: Book; onBookmark: (id: string, t
       available: 'bg-green-600',
       reading: 'bg-blue-600',
       requested: 'bg-orange-600',
+      on_hold: 'bg-yellow-600',
     }
     return colors[status as keyof typeof colors] || colors.available
   }

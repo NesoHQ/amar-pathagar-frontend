@@ -197,6 +197,7 @@ export default function BookDetailPage() {
       available: 'bg-green-600',
       reading: 'bg-blue-600',
       requested: 'bg-orange-600',
+      on_hold: 'bg-yellow-600',
     }
     return colors[status as keyof typeof colors] || colors.available
   }
@@ -317,13 +318,21 @@ export default function BookDetailPage() {
                         Cancel Request
                       </button>
                     </>
-                  ) : book.status === 'available' ? (
+                  ) : book.status === 'available' || book.status === 'on_hold' ? (
                     <button 
                       onClick={handleRequest} 
                       className="flex-1 px-6 py-3 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-sm
                                hover:bg-white hover:text-old-ink transition-all"
                     >
                       Request This Book
+                    </button>
+                  ) : book.status === 'reading' && book.current_holder_id === user?.id ? (
+                    <button
+                      onClick={handleMarkCompleted}
+                      className="flex-1 px-6 py-3 border-2 border-green-600 bg-green-600 text-white 
+                               hover:bg-green-700 font-bold uppercase text-sm tracking-wider transition-all"
+                    >
+                      ✓ Mark as Completed
                     </button>
                   ) : null}
                 </div>
