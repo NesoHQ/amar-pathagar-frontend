@@ -68,44 +68,55 @@ export default function BooksPage() {
 
   return (
     <Layout>
-      <div className="space-y-4 md:space-y-6">
-        {/* Header */}
-        <div className="classic-card">
-          <h1 className="text-2xl md:text-4xl font-bold uppercase tracking-wider mb-2">Book Collection</h1>
-          <p className="text-old-grey text-sm md:text-base">Browse and discover books in our community library</p>
+      <div className="space-y-6">
+        {/* Header - Compact */}
+        <div className="border-4 border-old-ink bg-white p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl md:text-4xl">📚</span>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider">Book Collection</h1>
+              <p className="text-old-grey text-xs md:text-sm uppercase tracking-wider">
+                {books.length} {books.length === 1 ? 'Book' : 'Books'} Available
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Search & Filters */}
-        <div className="classic-card">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs md:text-sm font-bold uppercase tracking-wider mb-2">
-                Search Books
-              </label>
+        {/* Search & Filters - Compact */}
+        <div className="border-4 border-old-ink bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+          <div className="flex flex-col md:flex-row gap-3">
+            {/* Search */}
+            <div className="flex-1">
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Title, author, or topic..."
-                  className="classic-input text-sm md:text-base"
+                  placeholder="Search by title, author..."
+                  className="flex-1 px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
                 />
-                <button onClick={handleSearch} className="classic-button px-4 md:px-8 text-xs md:text-sm whitespace-nowrap">
+                <button 
+                  onClick={handleSearch} 
+                  className="px-6 py-2 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-xs
+                           hover:bg-white hover:text-old-ink transition-all"
+                >
                   Search
                 </button>
               </div>
             </div>
-            <div>
-              <label className="block text-xs md:text-sm font-bold uppercase tracking-wider mb-2">
-                Status Filter
-              </label>
+
+            {/* Status Filter */}
+            <div className="md:w-48">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="classic-input text-sm md:text-base"
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                  loadBooks()
+                }}
+                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
               >
-                <option value="">All Books</option>
+                <option value="">All Status</option>
                 <option value="available">Available</option>
                 <option value="reading">In Circulation</option>
                 <option value="requested">Requested</option>
@@ -116,15 +127,15 @@ export default function BooksPage() {
 
         {/* Books Grid */}
         {loading ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 border-4 border-old-ink bg-white">
             <p className="text-old-grey uppercase tracking-wider text-sm">Loading books...</p>
           </div>
         ) : books.length === 0 ? (
-          <div className="classic-card text-center py-12">
+          <div className="text-center py-12 border-4 border-old-ink bg-white">
             <p className="text-old-grey uppercase tracking-wider text-sm">No books found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {books.map((book) => (
               <BookCard key={book.id} book={book} onBookmark={handleBookmark} />
             ))}
@@ -138,80 +149,88 @@ export default function BooksPage() {
 function BookCard({ book, onBookmark }: { book: Book; onBookmark: (id: string, type: string) => void }) {
   const router = useRouter()
   
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      available: { text: 'Available', class: 'border-green-600 text-green-600' },
-      reading: { text: 'In Circulation', class: 'border-blue-600 text-blue-600' },
-      requested: { text: 'Requested', class: 'border-orange-600 text-orange-600' },
+  const getStatusColor = (status: string) => {
+    const colors = {
+      available: 'bg-green-600',
+      reading: 'bg-blue-600',
+      requested: 'bg-orange-600',
     }
-    const badge = badges[status as keyof typeof badges] || badges.available
-    return <span className={`stamp ${badge.class}`}>{badge.text}</span>
+    return colors[status as keyof typeof colors] || colors.available
   }
 
   return (
-    <div className="classic-card">
-      {/* Book Cover */}
-      <div className="aspect-[3/4] bg-old-border mb-3 md:mb-4 flex items-center justify-center border-2 border-old-ink">
+    <div className="border-2 border-old-ink bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] transition-all group cursor-pointer"
+         onClick={() => router.push(`/books/${book.id}`)}>
+      {/* Book Cover - Smaller */}
+      <div className="aspect-[3/4] bg-old-border flex items-center justify-center border-b-2 border-old-ink relative overflow-hidden">
         {book.cover_url ? (
           <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-5xl md:text-6xl">📖</span>
+          <span className="text-4xl">📖</span>
         )}
+        {/* Status Badge Overlay */}
+        <div className={`absolute top-1.5 right-1.5 ${getStatusColor(book.status)} text-white px-1.5 py-0.5 text-xs font-bold uppercase shadow-md`}>
+          {book.status === 'reading' ? 'Out' : book.status}
+        </div>
       </div>
 
-      {/* Book Info */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold uppercase tracking-wider text-sm md:text-base lg:text-lg leading-tight flex-1">
-            {book.title}
-          </h3>
-          {getStatusBadge(book.status)}
-        </div>
+      {/* Book Info - Compact */}
+      <div className="p-2.5">
+        <h3 className="font-bold uppercase text-xs leading-tight mb-1 line-clamp-2 min-h-[2rem] group-hover:text-old-grey transition-colors">
+          {book.title}
+        </h3>
         
-        <p className="text-old-grey text-xs md:text-sm uppercase tracking-wider">
-          By {book.author}
+        <p className="text-old-grey text-xs mb-2 truncate">
+          {book.author}
         </p>
 
-        {book.category && (
-          <p className="text-xs text-old-grey uppercase">
-            {book.category}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between text-xs text-old-grey pt-2 border-t border-old-border">
-          <span>{book.total_reads} reads</span>
+        {/* Stats - Inline */}
+        <div className="flex items-center justify-between text-xs text-old-grey mb-2 pb-2 border-b border-old-border">
+          <span className="flex items-center gap-1">
+            <span className="opacity-50">📖</span>
+            {book.total_reads}
+          </span>
           {book.average_rating > 0 && (
-            <span>★ {book.average_rating.toFixed(1)}</span>
+            <span className="flex items-center gap-1">
+              <span className="text-yellow-600">★</span>
+              {book.average_rating.toFixed(1)}
+            </span>
+          )}
+          {book.category && (
+            <span className="text-xs opacity-75 truncate max-w-[60px]" title={book.category}>
+              {book.category}
+            </span>
           )}
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="mt-3 md:mt-4 space-y-2">
-        <button
-          onClick={() => router.push(`/books/${book.id}`)}
-          className="w-full classic-button text-xs md:text-sm py-2"
-        >
-          View Details
-        </button>
-        <div className="grid grid-cols-3 gap-2">
+        {/* Quick Actions - Compact */}
+        <div className="flex gap-1">
           <button
-            onClick={() => onBookmark(book.id, 'like')}
-            className="classic-button-secondary text-xs py-1.5 md:py-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onBookmark(book.id, 'like')
+            }}
+            className="flex-1 py-1 border border-old-border hover:border-red-400 hover:bg-red-50 transition-all text-sm"
             title="Like"
           >
             ❤️
           </button>
           <button
-            onClick={() => onBookmark(book.id, 'bookmark')}
-            className="classic-button-secondary text-xs py-1.5 md:py-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onBookmark(book.id, 'bookmark')
+            }}
+            className="flex-1 py-1 border border-old-border hover:border-blue-400 hover:bg-blue-50 transition-all text-sm"
             title="Bookmark"
           >
             🔖
           </button>
           <button
-            onClick={() => onBookmark(book.id, 'priority')}
-            className="classic-button-secondary text-xs py-1.5 md:py-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onBookmark(book.id, 'priority')
+            }}
+            className="flex-1 py-1 border border-old-border hover:border-yellow-400 hover:bg-yellow-50 transition-all text-sm"
             title="Priority"
           >
             ⭐

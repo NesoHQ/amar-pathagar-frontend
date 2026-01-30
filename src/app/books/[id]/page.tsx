@@ -113,85 +113,138 @@ export default function BookDetailPage() {
     return null
   }
 
+  const getStatusColor = (status: string) => {
+    const colors = {
+      available: 'bg-green-600',
+      reading: 'bg-blue-600',
+      requested: 'bg-orange-600',
+    }
+    return colors[status as keyof typeof colors] || colors.available
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Book Header */}
-        <div className="classic-card">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Cover */}
-            <div className="aspect-[3/4] bg-old-border flex items-center justify-center border-4 border-old-ink">
-              {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-8xl">📖</span>
-              )}
-            </div>
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/books')}
+          className="flex items-center gap-2 px-4 py-2 border-2 border-old-ink hover:bg-old-ink hover:text-old-paper transition-all text-sm font-bold uppercase"
+        >
+          ← Back to Collection
+        </button>
 
-            {/* Details */}
-            <div className="md:col-span-2 space-y-4">
-              <div>
-                <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">{book.title}</h1>
-                <p className="text-xl text-old-grey uppercase tracking-wider">By {book.author}</p>
-              </div>
+        {/* Book Card - Retro Library Card Style */}
+        <div className="border-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
+          {/* Decorative Corner */}
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
+            <div className="text-9xl">📚</div>
+          </div>
 
-              {book.description && (
-                <p className="text-old-grey leading-relaxed">{book.description}</p>
-              )}
-
-              <div className="flex flex-wrap gap-2">
-                {book.category && (
-                  <span className="vintage-badge">{book.category}</span>
-                )}
-                {book.tags?.map((tag: string) => (
-                  <span key={tag} className="vintage-badge">{tag}</span>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-old-border">
-                <div>
-                  <p className="text-2xl font-bold">{book.total_reads}</p>
-                  <p className="text-xs uppercase text-old-grey">Total Reads</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {book.average_rating > 0 ? `★ ${book.average_rating.toFixed(1)}` : 'N/A'}
-                  </p>
-                  <p className="text-xs uppercase text-old-grey">Rating</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold uppercase">{book.status}</p>
-                  <p className="text-xs uppercase text-old-grey">Status</p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="space-y-2">
-                {isRequested ? (
-                  <div className="space-y-2">
-                    <div className="w-full p-4 border-4 border-green-600 bg-green-50 text-center">
-                      <p className="text-2xl font-bold uppercase text-green-700 tracking-wider">
-                        ✓ Requested
-                      </p>
-                      <p className="text-sm text-green-600 mt-1">You have already requested this book</p>
-                    </div>
-                    <button 
-                      onClick={handleCancelRequest}
-                      className="w-full px-6 py-3 border-2 border-red-600 text-red-600 font-bold uppercase tracking-widest text-sm
-                               hover:bg-red-600 hover:text-white transition-all"
-                    >
-                      Cancel Request
-                    </button>
+          <div className="relative z-10 p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Book Cover - Compact */}
+              <div className="md:col-span-3">
+                <div className="border-4 border-old-ink shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] bg-white relative">
+                  <div className="aspect-[3/4] bg-old-border flex items-center justify-center">
+                    {book.cover_url ? (
+                      <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-7xl">📖</span>
+                    )}
                   </div>
-                ) : book.status === 'available' ? (
-                  <button onClick={handleRequest} className="w-full classic-button">
-                    Request This Book
-                  </button>
-                ) : null}
+                  {/* Status Badge */}
+                  <div className={`${getStatusColor(book.status)} text-white text-center py-2 font-bold uppercase text-sm tracking-wider`}>
+                    {book.status}
+                  </div>
+                </div>
+              </div>
+
+              {/* Book Information - Library Card Style */}
+              <div className="md:col-span-9 space-y-4">
+                {/* Title Section */}
+                <div className="border-b-4 border-old-ink pb-4">
+                  <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-2 leading-tight">
+                    {book.title}
+                  </h1>
+                  <p className="text-lg md:text-xl text-old-grey uppercase tracking-wider">
+                    by {book.author}
+                  </p>
+                </div>
+
+                {/* Metadata Grid - Retro Style */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1">Total Reads</p>
+                    <p className="text-2xl font-bold">{book.total_reads}</p>
+                  </div>
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1">Rating</p>
+                    <p className="text-2xl font-bold">
+                      {book.average_rating > 0 ? `★ ${book.average_rating.toFixed(1)}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1">Category</p>
+                    <p className="text-sm font-bold uppercase truncate">{book.category || 'General'}</p>
+                  </div>
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1">ISBN</p>
+                    <p className="text-sm font-bold">{book.isbn || 'N/A'}</p>
+                  </div>
+                </div>
+
+                {/* Description */}
+                {book.description && (
+                  <div className="border-2 border-old-ink p-4 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-2 font-bold">Description</p>
+                    <p className="text-sm text-old-grey leading-relaxed">{book.description}</p>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {book.tags && book.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {book.tags.map((tag: string) => (
+                      <span key={tag} className="px-3 py-1 border-2 border-old-ink text-xs uppercase font-bold bg-white">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  {isRequested ? (
+                    <>
+                      <div className="flex-1 p-3 border-4 border-green-600 bg-green-50 text-center">
+                        <p className="text-lg font-bold uppercase text-green-700 tracking-wider">
+                          ✓ Requested
+                        </p>
+                      </div>
+                      <button 
+                        onClick={handleCancelRequest}
+                        className="px-6 py-3 border-2 border-red-600 text-red-600 font-bold uppercase text-sm
+                                 hover:bg-red-600 hover:text-white transition-all"
+                      >
+                        Cancel Request
+                      </button>
+                    </>
+                  ) : book.status === 'available' ? (
+                    <button 
+                      onClick={handleRequest} 
+                      className="flex-1 px-6 py-3 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-sm
+                               hover:bg-white hover:text-old-ink transition-all"
+                    >
+                      Request This Book
+                    </button>
+                  ) : null}
+                </div>
+
+                {/* Current Holder */}
                 {book.current_holder && (
-                  <div className="p-3 border-2 border-old-ink bg-white">
-                    <p className="text-sm font-bold uppercase">Currently With:</p>
-                    <p className="text-old-grey">{book.current_holder.full_name || book.current_holder.username}</p>
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1 font-bold">Currently With</p>
+                    <p className="text-sm font-bold">{book.current_holder.full_name || book.current_holder.username}</p>
                   </div>
                 )}
               </div>
@@ -199,79 +252,92 @@ export default function BookDetailPage() {
           </div>
         </div>
 
-        {/* Reading Ideas Section */}
-        <div className="classic-card">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold uppercase tracking-wider">Reading Ideas</h2>
+        {/* Reading Ideas Section - Compact */}
+        <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">💡</span>
+              <h2 className="text-xl font-bold uppercase tracking-wider">Reading Ideas</h2>
+              <span className="px-2 py-0.5 bg-old-paper text-old-ink text-xs font-bold">
+                {ideas.length}
+              </span>
+            </div>
             <button
               onClick={() => setShowIdeaForm(!showIdeaForm)}
-              className="classic-button-secondary text-sm"
+              className="px-4 py-2 border-2 border-old-paper text-old-paper font-bold uppercase text-xs
+                       hover:bg-old-paper hover:text-old-ink transition-all"
             >
-              {showIdeaForm ? 'Cancel' : 'Share Your Thoughts'}
+              {showIdeaForm ? 'Cancel' : '+ Add Idea'}
             </button>
           </div>
 
-          {showIdeaForm && (
-            <form onSubmit={handleSubmitIdea} className="mb-6 p-4 border-2 border-old-border bg-white">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Title</label>
-                  <input
-                    type="text"
-                    value={ideaForm.title}
-                    onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
-                    className="classic-input"
-                    required
-                  />
+          <div className="p-4 md:p-6">
+            {showIdeaForm && (
+              <form onSubmit={handleSubmitIdea} className="mb-6 p-4 border-2 border-old-border bg-old-paper">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Title</label>
+                    <input
+                      type="text"
+                      value={ideaForm.title}
+                      onChange={(e) => setIdeaForm({ ...ideaForm, title: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Your Thoughts</label>
+                    <textarea
+                      value={ideaForm.content}
+                      onChange={(e) => setIdeaForm({ ...ideaForm, content: e.target.value })}
+                      className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none text-sm"
+                      rows={3}
+                      required
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="px-6 py-2 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-xs
+                             hover:bg-white hover:text-old-ink transition-all"
+                  >
+                    Post Idea (+3 Points)
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Your Thoughts</label>
-                  <textarea
-                    value={ideaForm.content}
-                    onChange={(e) => setIdeaForm({ ...ideaForm, content: e.target.value })}
-                    className="classic-input"
-                    rows={4}
-                    required
-                  />
-                </div>
-                <button type="submit" className="classic-button">
-                  Post Idea (+3 Points)
-                </button>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
 
-          {ideas.length === 0 ? (
-            <p className="text-center text-old-grey py-8">No ideas yet. Be the first to share!</p>
-          ) : (
-            <div className="space-y-4">
-              {ideas.map((idea) => (
-                <div key={idea.id} className="p-4 border-2 border-old-border bg-white">
-                  <h3 className="font-bold uppercase mb-2">{idea.title}</h3>
-                  <p className="text-old-grey mb-3">{idea.content}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-old-grey">
-                      By {idea.user?.username || 'Anonymous'}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleVote(idea.id, 'upvote')}
-                        className="px-3 py-1 border border-old-ink hover:bg-old-ink hover:text-old-paper"
-                      >
-                        👍 {idea.upvotes}
-                      </button>
-                      <button
-                        onClick={() => handleVote(idea.id, 'downvote')}
-                        className="px-3 py-1 border border-old-ink hover:bg-old-ink hover:text-old-paper"
-                      >
-                        👎 {idea.downvotes}
-                      </button>
+            {ideas.length === 0 ? (
+              <p className="text-center text-old-grey py-8 text-sm">No ideas yet. Be the first to share!</p>
+            ) : (
+              <div className="space-y-3">
+                {ideas.map((idea) => (
+                  <div key={idea.id} className="border-2 border-old-border p-4 bg-gradient-to-r from-white to-gray-50 hover:border-old-ink transition-all">
+                    <h3 className="font-bold uppercase text-sm mb-2">{idea.title}</h3>
+                    <p className="text-old-grey text-sm mb-3 leading-relaxed">{idea.content}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-old-grey uppercase">
+                        by {idea.user?.username || 'Anonymous'}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleVote(idea.id, 'upvote')}
+                          className="px-3 py-1 border border-old-ink hover:bg-green-50 hover:border-green-600 transition-all"
+                        >
+                          👍 {idea.upvotes}
+                        </button>
+                        <button
+                          onClick={() => handleVote(idea.id, 'downvote')}
+                          className="px-3 py-1 border border-old-ink hover:bg-red-50 hover:border-red-600 transition-all"
+                        >
+                          👎 {idea.downvotes}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Layout>
