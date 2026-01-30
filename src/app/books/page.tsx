@@ -147,7 +147,7 @@ function BookCard({ book, onBookmark }: { book: Book; onBookmark: (id: string, t
   }
 
   return (
-    <div className="classic-card hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.15)] transition-shadow">
+    <div className="classic-card">
       {/* Book Cover */}
       <div className="aspect-[3/4] bg-old-border mb-4 flex items-center justify-center border-2 border-old-ink">
         {book.cover_url ? (

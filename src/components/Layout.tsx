@@ -18,11 +18,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => pathname === path
 
   return (
-    <div className="min-h-screen old-paper-texture">
+    <div className="flex flex-col min-h-screen old-paper-texture">
       {/* Classic Header */}
       <header className="bg-white border-b-4 border-old-ink shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center space-x-3">
               <div className="text-4xl">📚</div>
@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Navigation */}
             {isAuthenticated && (
-              <nav className="hidden md:flex space-x-1">
+              <nav className="flex flex-wrap justify-center gap-1">
                 <NavLink href="/dashboard" active={isActive('/dashboard')}>Dashboard</NavLink>
                 <NavLink href="/books" active={isActive('/books')}>Books</NavLink>
                 <NavLink href="/my-library" active={isActive('/my-library')}>My Library</NavLink>
@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* User Info */}
             {isAuthenticated && user && (
               <div className="flex items-center space-x-4">
-                <div className="text-right hidden md:block">
+                <div className="text-right">
                   <div className="font-bold text-old-ink">{user.full_name || user.username}</div>
                   <div className="text-xs text-old-grey uppercase">
                     Score: {user.success_score} • {user.role}
@@ -70,13 +70,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* Main Content - Flex Grow */}
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
         {children}
       </main>
 
-      {/* Classic Footer */}
-      <footer className="bg-white border-t-4 border-old-ink mt-16">
+      {/* Sticky Footer */}
+      <footer className="bg-white border-t-4 border-old-ink mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center">
             <p className="text-old-grey text-sm uppercase tracking-wider">

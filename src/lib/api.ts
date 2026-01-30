@@ -80,7 +80,7 @@ export const ideasAPI = {
     api.post('/ideas', data),
   getByBook: (bookId: string) => api.get(`/ideas/book/${bookId}`),
   vote: (ideaId: string, voteType: 'upvote' | 'downvote') =>
-    api.post(`/ideas/${ideaId}/vote`, { vote_type: voteType }),
+    api.post(`/ideas/${ideaId}/vote?type=${voteType === 'downvote' ? 'down' : 'up'}`),
 }
 
 // Reviews API
