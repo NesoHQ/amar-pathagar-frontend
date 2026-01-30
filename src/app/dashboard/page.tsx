@@ -278,41 +278,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
-        {/* Philosophy Banner - More Aesthetic */}
-        <div className="border-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
-          <div className="absolute top-0 right-0 text-9xl opacity-5">📚</div>
-          <div className="relative z-10">
-            <div className="text-center mb-6">
-              <div className="inline-block px-6 py-2 border-4 border-old-ink bg-white mb-4">
-                <p className="text-xl md:text-2xl font-bold uppercase tracking-widest">Our Philosophy</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
-                <div className="text-center">
-                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">🤝</p>
-                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Trust-Based</p>
-                  <p className="text-xs text-old-grey uppercase">Reading Network</p>
-                </div>
-              </div>
-              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
-                <div className="text-center">
-                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">📖</p>
-                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Knowledge &gt; Hoarding</p>
-                  <p className="text-xs text-old-grey uppercase">Share Wisdom</p>
-                </div>
-              </div>
-              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
-                <div className="text-center">
-                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">⭐</p>
-                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Reputation</p>
-                  <p className="text-xs text-old-grey uppercase">Through Contribution</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </Layout>
   )
