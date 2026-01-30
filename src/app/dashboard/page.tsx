@@ -1,162 +1,171 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
-import { useAuthStore } from '@/store/authStore'
-import { useToastStore } from '@/store/toastStore'
-import { booksAPI } from '@/lib/api'
-import { handoverAPI } from '@/lib/handoverApi'
-import ConfirmModal from '@/components/ConfirmModal'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Layout from "@/components/Layout";
+import { useAuthStore } from "@/store/authStore";
+import { useToastStore } from "@/store/toastStore";
+import { booksAPI } from "@/lib/api";
+import { handoverAPI } from "@/lib/handoverApi";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { user, isAuthenticated, _hasHydrated } = useAuthStore()
-  const { success, error } = useToastStore()
+  const router = useRouter();
+  const { user, isAuthenticated, _hasHydrated } = useAuthStore();
+  const { success, error } = useToastStore();
   const [stats, setStats] = useState({
     totalBooks: 0,
     availableBooks: 0,
     booksReading: 0,
-  })
-  const [myRequests, setMyRequests] = useState<any[]>([])
-  const [myCurrentBooks, setMyCurrentBooks] = useState<any[]>([])
-  const [readingHistory, setReadingHistory] = useState<any[]>([])
-  const [handoverThreads, setHandoverThreads] = useState<any[]>([])
+  });
+  const [myRequests, setMyRequests] = useState<any[]>([]);
+  const [myCurrentBooks, setMyCurrentBooks] = useState<any[]>([]);
+  const [readingHistory, setReadingHistory] = useState<any[]>([]);
+  const [handoverThreads, setHandoverThreads] = useState<any[]>([]);
   const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean
-    title: string
-    message: string
-    onConfirm: () => void
-    confirmText?: string
-    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    confirmColor?: "red" | "green" | "blue" | "orange";
   }>({
     isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {}
-  })
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
-      router.push('/login')
+      router.push("/login");
     }
-  }, [isAuthenticated, _hasHydrated, router])
+  }, [isAuthenticated, _hasHydrated, router]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadStats()
-      loadMyRequests()
-      loadMyCurrentBooks()
-      loadReadingHistory()
-      loadHandoverThreads()
+      loadStats();
+      loadMyRequests();
+      loadMyCurrentBooks();
+      loadReadingHistory();
+      loadHandoverThreads();
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated]);
 
   const loadStats = async () => {
     try {
-      const response = await booksAPI.getAll()
-      const books = response.data.data || []
+      const response = await booksAPI.getAll();
+      const books = response.data.data || [];
       setStats({
         totalBooks: books.length,
-        availableBooks: books.filter((b: any) => b.status === 'available').length,
-        booksReading: books.filter((b: any) => b.status === 'reading').length,
-      })
+        availableBooks: books.filter((b: any) => b.status === "available")
+          .length,
+        booksReading: books.filter((b: any) => b.status === "reading").length,
+      });
     } catch (error) {
-      console.error('Failed to load stats:', error)
+      console.error("Failed to load stats:", error);
     }
-  }
+  };
 
   const loadMyRequests = async () => {
     try {
-      const response = await booksAPI.getMyRequests()
-      const requestsData = response.data.data || response.data || []
-      setMyRequests(Array.isArray(requestsData) ? requestsData : [])
+      const response = await booksAPI.getMyRequests();
+      const requestsData = response.data.data || response.data || [];
+      setMyRequests(Array.isArray(requestsData) ? requestsData : []);
     } catch (error) {
-      console.error('Failed to load requests:', error)
-      setMyRequests([])
+      console.error("Failed to load requests:", error);
+      setMyRequests([]);
     }
-  }
+  };
 
   const loadMyCurrentBooks = async () => {
     try {
-      const response = await booksAPI.getAll()
-      const books = response.data.data || []
+      const response = await booksAPI.getAll();
+      const books = response.data.data || [];
       // Filter books where current user is the holder
-      const myBooks = books.filter((b: any) => b.current_holder_id === user?.id)
-      setMyCurrentBooks(myBooks)
+      const myBooks = books.filter(
+        (b: any) => b.current_holder_id === user?.id,
+      );
+      setMyCurrentBooks(myBooks);
     } catch (error) {
-      console.error('Failed to load current books:', error)
-      setMyCurrentBooks([])
+      console.error("Failed to load current books:", error);
+      setMyCurrentBooks([]);
     }
-  }
+  };
 
   const loadReadingHistory = async () => {
     try {
-      const response = await booksAPI.getMyReadingHistory()
-      const historyData = response.data.data || response.data || []
-      setReadingHistory(Array.isArray(historyData) ? historyData.slice(0, 5) : [])
+      const response = await booksAPI.getMyReadingHistory();
+      const historyData = response.data.data || response.data || [];
+      setReadingHistory(
+        Array.isArray(historyData) ? historyData.slice(0, 5) : [],
+      );
     } catch (error) {
-      console.error('Failed to load reading history:', error)
-      setReadingHistory([])
+      console.error("Failed to load reading history:", error);
+      setReadingHistory([]);
     }
-  }
+  };
 
   const loadHandoverThreads = async () => {
     try {
-      const response = await handoverAPI.getUserHandoverThreads()
-      const threadsData = response.data.data || response.data || []
+      const response = await handoverAPI.getUserHandoverThreads();
+      const threadsData = response.data.data || response.data || [];
       // Filter to only show active threads
-      const activeThreads = Array.isArray(threadsData) ? threadsData.filter((t: any) => t.status === 'active') : []
-      setHandoverThreads(activeThreads)
+      const activeThreads = Array.isArray(threadsData)
+        ? threadsData.filter((t: any) => t.status === "active")
+        : [];
+      setHandoverThreads(activeThreads);
     } catch (error) {
-      console.error('Failed to load handover threads:', error)
-      setHandoverThreads([])
+      console.error("Failed to load handover threads:", error);
+      setHandoverThreads([]);
     }
-  }
+  };
 
   const handleCancelRequest = async (bookId: string, bookTitle: string) => {
     try {
-      await booksAPI.cancelRequest(bookId)
-      success(`Request for "${bookTitle}" cancelled successfully!`)
-      loadMyRequests()
+      await booksAPI.cancelRequest(bookId);
+      success(`Request for "${bookTitle}" cancelled successfully!`);
+      loadMyRequests();
     } catch (err: any) {
-      error(err.response?.data?.error || 'Failed to cancel request')
+      error(err.response?.data?.error || "Failed to cancel request");
     }
-  }
+  };
 
   const handleReturnBook = (bookId: string, bookTitle: string) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Return Book',
+      title: "Return Book",
       message: `Return "${bookTitle}"? This will make it available for others.`,
-      confirmText: 'Return Book',
-      confirmColor: 'green',
+      confirmText: "Return Book",
+      confirmColor: "green",
       onConfirm: async () => {
         try {
-          await booksAPI.returnBook(bookId)
-          success(`"${bookTitle}" returned successfully!`)
-          loadMyCurrentBooks()
-          loadStats()
-          loadReadingHistory()
+          await booksAPI.returnBook(bookId);
+          success(`"${bookTitle}" returned successfully!`);
+          loadMyCurrentBooks();
+          loadStats();
+          loadReadingHistory();
         } catch (err: any) {
-          error(err.response?.data?.error || 'Failed to return book')
+          error(err.response?.data?.error || "Failed to return book");
         }
-      }
-    })
-  }
+      },
+    });
+  };
 
   if (!_hasHydrated || !isAuthenticated || !user) {
-    return null
+    return null;
   }
 
   const getScoreStatus = (score: number) => {
-    if (score >= 100) return { label: 'Excellent Standing', color: 'text-green-700' }
-    if (score >= 50) return { label: 'Good Standing', color: 'text-blue-700' }
-    if (score >= 20) return { label: 'Fair Standing', color: 'text-yellow-700' }
-    return { label: 'Low Priority', color: 'text-red-700' }
-  }
+    if (score >= 100)
+      return { label: "Excellent Standing", color: "text-green-700" };
+    if (score >= 50) return { label: "Good Standing", color: "text-blue-700" };
+    if (score >= 20)
+      return { label: "Fair Standing", color: "text-yellow-700" };
+    return { label: "Low Priority", color: "text-red-700" };
+  };
 
-  const scoreStatus = getScoreStatus(user.success_score)
+  const scoreStatus = getScoreStatus(user.success_score);
 
   return (
     <Layout>
@@ -172,7 +181,8 @@ export default function DashboardPage() {
                   {user.full_name || user.username}
                 </h1>
                 <p className="text-sm text-old-grey uppercase tracking-wider">
-                  Member Since {new Date(user.created_at || Date.now()).getFullYear()}
+                  Member Since{" "}
+                  {new Date(user.created_at || Date.now()).getFullYear()}
                 </p>
                 <div className="flex gap-4 mt-3">
                   <div className="flex items-center gap-2">
@@ -192,7 +202,9 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">⭐</span>
                     <div>
-                      <p className="text-lg font-bold">{user.total_upvotes || 0}</p>
+                      <p className="text-lg font-bold">
+                        {user.total_upvotes || 0}
+                      </p>
                       <p className="text-xs text-old-grey uppercase">Upvotes</p>
                     </div>
                   </div>
@@ -205,14 +217,21 @@ export default function DashboardPage() {
           <div className="border-4 border-old-ink bg-gradient-to-br from-old-ink to-gray-800 text-old-paper p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
             <div className="absolute top-0 right-0 text-9xl opacity-10">⭐</div>
             <div className="relative z-10">
-              <p className="text-xs uppercase tracking-widest opacity-75 mb-2">Success Score</p>
+              <p className="text-xs uppercase tracking-widest opacity-75 mb-2">
+                Success Score
+              </p>
               <p className="text-6xl font-bold mb-2">{user.success_score}</p>
-              <div className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider border-2 ${
-                user.success_score >= 100 ? 'border-green-400 text-green-400' :
-                user.success_score >= 50 ? 'border-blue-400 text-blue-400' :
-                user.success_score >= 20 ? 'border-yellow-400 text-yellow-400' :
-                'border-red-400 text-red-400'
-              }`}>
+              <div
+                className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider border-2 ${
+                  user.success_score >= 100
+                    ? "border-green-400 text-green-400"
+                    : user.success_score >= 50
+                      ? "border-blue-400 text-blue-400"
+                      : user.success_score >= 20
+                        ? "border-yellow-400 text-yellow-400"
+                        : "border-red-400 text-red-400"
+                }`}
+              >
                 {scoreStatus.label}
               </div>
             </div>
@@ -222,38 +241,58 @@ export default function DashboardPage() {
         {/* Library Statistics - More Visual */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <div className="border-4 border-old-ink bg-gradient-to-br from-white to-gray-50 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all">
-            <div className="absolute -bottom-4 -right-4 text-8xl opacity-5 group-hover:opacity-10 transition-opacity">📚</div>
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-5 group-hover:opacity-10 transition-opacity">
+              📚
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-3xl">📚</span>
                 <span className="vintage-badge text-xs">Total</span>
               </div>
               <p className="text-5xl font-bold mb-2">{stats.totalBooks}</p>
-              <p className="text-sm uppercase tracking-wider text-old-grey">Books in Collection</p>
+              <p className="text-sm uppercase tracking-wider text-old-grey">
+                Books in Collection
+              </p>
             </div>
           </div>
 
           <div className="border-4 border-green-600 bg-gradient-to-br from-green-50 to-green-100 p-6 shadow-[4px_4px_0px_0px_rgba(22,163,74,0.3)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(22,163,74,0.4)] transition-all">
-            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">✓</div>
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">
+              ✓
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-3xl">✓</span>
-                <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold uppercase">Available</span>
+                <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold uppercase">
+                  Available
+                </span>
               </div>
-              <p className="text-5xl font-bold mb-2 text-green-700">{stats.availableBooks}</p>
-              <p className="text-sm uppercase tracking-wider text-green-800">Ready to Borrow</p>
+              <p className="text-5xl font-bold mb-2 text-green-700">
+                {stats.availableBooks}
+              </p>
+              <p className="text-sm uppercase tracking-wider text-green-800">
+                Ready to Borrow
+              </p>
             </div>
           </div>
 
           <div className="border-4 border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100 p-6 shadow-[4px_4px_0px_0px_rgba(37,99,235,0.3)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(37,99,235,0.4)] transition-all">
-            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">📖</div>
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">
+              📖
+            </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-3xl">📖</span>
-                <span className="px-2 py-1 bg-blue-600 text-white text-xs font-bold uppercase">Active</span>
+                <span className="px-2 py-1 bg-blue-600 text-white text-xs font-bold uppercase">
+                  Active
+                </span>
               </div>
-              <p className="text-5xl font-bold mb-2 text-blue-700">{stats.booksReading}</p>
-              <p className="text-sm uppercase tracking-wider text-blue-800">In Circulation</p>
+              <p className="text-5xl font-bold mb-2 text-blue-700">
+                {stats.booksReading}
+              </p>
+              <p className="text-sm uppercase tracking-wider text-blue-800">
+                In Circulation
+              </p>
             </div>
           </div>
         </div>
@@ -284,8 +323,8 @@ export default function DashboardPage() {
               {/* Book Requests List */}
               <div className="space-y-2">
                 {myRequests.map((request: any) => (
-                  <div 
-                    key={request.id} 
+                  <div
+                    key={request.id}
                     className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 border-2 border-old-border hover:border-old-ink transition-all bg-gradient-to-r from-white to-gray-50 items-center"
                   >
                     {/* Book Title */}
@@ -294,9 +333,11 @@ export default function DashboardPage() {
                         <span className="text-xl">📕</span>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold uppercase text-sm truncate">
-                            {request.book?.title || 'Unknown Book'}
+                            {request.book?.title || "Unknown Book"}
                           </h3>
-                          <span className="vintage-badge text-xs mt-1 inline-block">{request.status}</span>
+                          <span className="vintage-badge text-xs mt-1 inline-block">
+                            {request.status}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -304,23 +345,26 @@ export default function DashboardPage() {
                     {/* Author - Desktop */}
                     <div className="md:col-span-3 hidden md:block">
                       <p className="text-sm text-old-grey truncate">
-                        {request.book?.author || 'Unknown Author'}
+                        {request.book?.author || "Unknown Author"}
                       </p>
                     </div>
 
                     {/* Date - Desktop */}
                     <div className="md:col-span-2 hidden md:block">
                       <p className="text-xs text-old-grey">
-                        {new Date(request.requested_at).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric'
-                        })}
+                        {new Date(request.requested_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
                       </p>
                     </div>
 
                     {/* Actions */}
                     <div className="md:col-span-2 flex gap-2 justify-end">
-                      <button 
+                      <button
                         className="px-3 py-1 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
                                  font-bold uppercase text-xs tracking-wider transition-all"
                         onClick={() => router.push(`/books/${request.book_id}`)}
@@ -328,10 +372,15 @@ export default function DashboardPage() {
                       >
                         View
                       </button>
-                      <button 
+                      <button
                         className="px-3 py-1 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
                                  hover:bg-red-600 hover:text-white transition-all tracking-wider"
-                        onClick={() => handleCancelRequest(request.book_id, request.book?.title || 'this book')}
+                        onClick={() =>
+                          handleCancelRequest(
+                            request.book_id,
+                            request.book?.title || "this book",
+                          )
+                        }
                         title="Cancel request"
                       >
                         Cancel
@@ -340,13 +389,16 @@ export default function DashboardPage() {
 
                     {/* Mobile Info */}
                     <div className="md:hidden text-xs text-old-grey flex items-center gap-3">
-                      <span>{request.book?.author || 'Unknown Author'}</span>
+                      <span>{request.book?.author || "Unknown Author"}</span>
                       <span>•</span>
                       <span>
-                        {new Date(request.requested_at).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric'
-                        })}
+                        {new Date(request.requested_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
                       </span>
                     </div>
                   </div>
@@ -373,27 +425,33 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="space-y-3">
                 {myCurrentBooks.map((book: any) => (
-                  <div 
-                    key={book.id} 
+                  <div
+                    key={book.id}
                     className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-4 hover:border-blue-600 transition-all"
                   >
                     <div className="flex items-start gap-4">
                       <span className="text-4xl">📖</span>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold uppercase text-lg mb-1 truncate">{book.title}</h3>
-                        <p className="text-sm text-old-grey mb-3">{book.author}</p>
+                        <h3 className="font-bold uppercase text-lg mb-1 truncate">
+                          {book.title}
+                        </h3>
+                        <p className="text-sm text-old-grey mb-3">
+                          {book.author}
+                        </p>
                         <div className="flex flex-wrap gap-2">
-                          <button 
+                          <button
                             className="px-4 py-2 border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white 
                                      font-bold uppercase text-xs tracking-wider transition-all"
                             onClick={() => router.push(`/books/${book.id}`)}
                           >
                             View Details
                           </button>
-                          <button 
+                          <button
                             className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white hover:bg-green-700 
                                      font-bold uppercase text-xs tracking-wider transition-all"
-                            onClick={() => handleReturnBook(book.id, book.title)}
+                            onClick={() =>
+                              handleReturnBook(book.id, book.title)
+                            }
                           >
                             ✓ Return Book
                           </button>
@@ -424,42 +482,47 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="space-y-3">
                 {handoverThreads.map((thread: any) => (
-                  <div 
-                    key={thread.id} 
+                  <div
+                    key={thread.id}
                     className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-white p-4 hover:border-orange-600 transition-all"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold uppercase text-sm mb-2 truncate">
-                          {thread.book?.title || 'Unknown Book'}
+                          {thread.book?.title || "Unknown Book"}
                         </h3>
                         <div className="space-y-1 text-xs text-old-grey mb-3">
                           <div className="flex items-center gap-2">
                             <span>From:</span>
                             <span className="font-bold text-old-ink">
-                              {thread.current_holder?.full_name || thread.current_holder?.username}
+                              {thread.current_holder?.full_name ||
+                                thread.current_holder?.username}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span>To:</span>
                             <span className="font-bold text-old-ink">
-                              {thread.next_reader?.full_name || thread.next_reader?.username}
+                              {thread.next_reader?.full_name ||
+                                thread.next_reader?.username}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span>Status:</span>
-                            <span className={`px-2 py-0.5 text-xs font-bold uppercase ${
-                              thread.delivery_status === 'delivered'
-                                ? 'bg-green-600 text-white'
-                                : thread.delivery_status === 'in_transit'
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-gray-600 text-white'
-                            }`}>
-                              {thread.delivery_status?.replace('_', ' ') || 'Not Started'}
+                            <span
+                              className={`px-2 py-0.5 text-xs font-bold uppercase ${
+                                thread.delivery_status === "delivered"
+                                  ? "bg-green-600 text-white"
+                                  : thread.delivery_status === "in_transit"
+                                    ? "bg-orange-600 text-white"
+                                    : "bg-gray-600 text-white"
+                              }`}
+                            >
+                              {thread.delivery_status?.replace("_", " ") ||
+                                "Not Started"}
                             </span>
                           </div>
                         </div>
-                        <button 
+                        <button
                           className="px-4 py-2 border-2 border-orange-600 bg-white text-orange-600 hover:bg-orange-600 hover:text-white 
                                    font-bold uppercase text-xs tracking-wider transition-all"
                           onClick={() => router.push(`/handover/${thread.id}`)}
@@ -490,25 +553,24 @@ export default function DashboardPage() {
             <div className="p-4">
               <div className="space-y-2">
                 {readingHistory.map((history: any) => (
-                  <div 
-                    key={history.id} 
+                  <div
+                    key={history.id}
                     className="flex items-center justify-between p-3 border-2 border-old-border hover:border-old-ink transition-all bg-gradient-to-r from-white to-gray-50"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <span className="text-2xl">✓</span>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold uppercase text-sm truncate">
-                          {history.book?.title || 'Unknown Book'}
+                          {history.book?.title || "Unknown Book"}
                         </h3>
                         <p className="text-xs text-old-grey">
-                          {history.end_date 
-                            ? `Completed ${new Date(history.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                            : `Started ${new Date(history.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                          }
+                          {history.end_date
+                            ? `Completed ${new Date(history.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                            : `Started ${new Date(history.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                         </p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       className="px-3 py-1 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
                                font-bold uppercase text-xs tracking-wider transition-all"
                       onClick={() => router.push(`/books/${history.book_id}`)}
@@ -536,49 +598,49 @@ export default function DashboardPage() {
                 icon="📚"
                 title="Browse Books"
                 description="Explore collection"
-                onClick={() => router.push('/books')}
+                onClick={() => router.push("/books")}
               />
               <NavCard
                 icon="📖"
                 title="My Library"
                 description="Bookmarks & reads"
-                onClick={() => router.push('/my-library')}
+                onClick={() => router.push("/my-library")}
               />
               <NavCard
                 icon="📜"
                 title="History"
                 description="Reading journey"
-                onClick={() => router.push('/reading-history')}
+                onClick={() => router.push("/reading-history")}
               />
               <NavCard
                 icon="⭐"
                 title="Reviews"
                 description="Rate & review"
-                onClick={() => router.push('/reviews')}
+                onClick={() => router.push("/reviews")}
               />
               <NavCard
                 icon="🏆"
                 title="Leaderboard"
                 description="Top contributors"
-                onClick={() => router.push('/leaderboard')}
+                onClick={() => router.push("/leaderboard")}
               />
               <NavCard
                 icon="🎁"
                 title="Donate"
                 description="Support us"
-                onClick={() => router.push('/donations')}
+                onClick={() => router.push("/donations")}
               />
               <NavCard
                 icon="🔄"
                 title="Handovers"
                 description="Book exchanges"
-                onClick={() => router.push('/handover')}
+                onClick={() => router.push("/handover")}
               />
               <NavCard
                 icon="✏️"
                 title="Edit Profile"
                 description="Update info"
-                onClick={() => router.push('/profile/edit')}
+                onClick={() => router.push("/profile/edit")}
               />
               <NavCard
                 icon="👤"
@@ -602,19 +664,19 @@ export default function DashboardPage() {
         confirmColor={confirmModal.confirmColor}
       />
     </Layout>
-  )
+  );
 }
 
-function NavCard({ 
-  icon, 
-  title, 
-  description, 
-  onClick 
-}: { 
-  icon: string
-  title: string
-  description: string
-  onClick: () => void
+function NavCard({
+  icon,
+  title,
+  description,
+  onClick,
+}: {
+  icon: string;
+  title: string;
+  description: string;
+  onClick: () => void;
 }) {
   return (
     <button
@@ -623,10 +685,14 @@ function NavCard({
                transition-all bg-gradient-to-br from-white to-gray-50 group"
     >
       <div className="text-center">
-        <div className="text-5xl mb-3 group-hover:scale-125 transition-transform">{icon}</div>
-        <p className="font-bold uppercase tracking-wider text-sm mb-1">{title}</p>
+        <div className="text-5xl mb-3 group-hover:scale-125 transition-transform">
+          {icon}
+        </div>
+        <p className="font-bold uppercase tracking-wider text-sm mb-1">
+          {title}
+        </p>
         <p className="text-xs text-old-grey">{description}</p>
       </div>
     </button>
-  )
+  );
 }
