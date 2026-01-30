@@ -7,12 +7,21 @@ import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI } from '@/lib/api'
 import { adminAPI } from '@/lib/adminApi'
+import StatCard from '@/components/admin/StatCard'
+import TabButton from '@/components/admin/TabButton'
+import OverviewTab from '@/components/admin/OverviewTab'
+import RequestsTab from '@/components/admin/RequestsTab'
+import UsersTab from '@/components/admin/UsersTab'
+import BooksTab from '@/components/admin/BooksTab'
+
+type TabType = 'overview' | 'requests' | 'users' | 'books'
 
 export default function AdminPage() {
   const router = useRouter()
   const { isAuthenticated, user, _hasHydrated } = useAuthStore()
   const { success, error } = useToastStore()
-  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'users' | 'books'>('overview')
+  
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [stats, setStats] = useState<any>(null)
   const [pendingRequests, setPendingRequests] = useState<any[]>([])
   const [users, setUsers] = useState<any[]>([])
@@ -47,15 +56,12 @@ export default function AdminPage() {
       ])
       setStats(statsRes.data.data || statsRes.data)
       
-      // Ensure requests is always an array
       const requestsData = requestsRes.data.data || requestsRes.data
       setPendingRequests(Array.isArray(requestsData) ? requestsData : [])
       
-      // Ensure users is always an array
       const usersData = usersRes.data.data || usersRes.data
       setUsers(Array.isArray(usersData) ? usersData : [])
       
-      // Ensure books is always an array
       const booksData = booksRes.data.data || booksRes.data
       setBooks(Array.isArray(booksData) ? booksData : [])
     } catch (err: any) {
@@ -86,11 +92,10 @@ export default function AdminPage() {
 
   const handleApproveRequest = async (requestId: string) => {
     const dueDate = new Date()
-    dueDate.setDate(dueDate.getDate() + 14) // 14 days from now
+    dueDate.setDate(dueDate.getDate() + 14)
     try {
       await adminAPI.approveRequest(requestId, dueDate.toISOString())
       success('Request approved successfully!')
-      // Remove the approved request from the list immediately
       setPendingRequests(prev => prev.filter(req => req.id !== requestId))
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to approve request')
@@ -103,7 +108,6 @@ export default function AdminPage() {
     try {
       await adminAPI.rejectRequest(requestId, reason)
       success('Request rejected')
-      // Remove the rejected request from the list immediately
       setPendingRequests(prev => prev.filter(req => req.id !== requestId))
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to reject request')
@@ -180,7 +184,7 @@ export default function AdminPage() {
 
           <div className="p-6">
             {activeTab === 'overview' && (
-              <OverviewTab stats={stats} />
+              <OverviewTab stats={stats} onNavigate={setActiveTab} />
             )}
 
             {activeTab === 'requests' && (
@@ -213,306 +217,5 @@ export default function AdminPage() {
         </div>
       </div>
     </Layout>
-  )
-}
-
-function StatCard({ icon, label, value, color }: any) {
-  const colors = {
-    blue: 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100',
-    green: 'border-green-600 bg-gradient-to-br from-green-50 to-green-100',
-    orange: 'border-orange-600 bg-gradient-to-br from-orange-50 to-orange-100',
-    purple: 'border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100',
-  }
-  return (
-    <div className={`border-4 ${colors[color as keyof typeof colors]} p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]`}>
-      <div className="text-center">
-        <div className="text-4xl mb-2">{icon}</div>
-        <p className="text-3xl font-bold mb-1">{value}</p>
-        <p className="text-xs uppercase tracking-wider text-old-grey">{label}</p>
-      </div>
-    </div>
-  )
-}
-
-function TabButton({ active, onClick, label }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-6 py-3 font-bold uppercase text-sm tracking-wider transition-all whitespace-nowrap ${
-        active
-          ? 'bg-old-ink text-old-paper'
-          : 'bg-white text-old-grey hover:bg-gray-100'
-      }`}
-    >
-      {label}
-    </button>
-  )
-}
-
-function OverviewTab({ stats }: any) {
-  if (!stats) return <p className="text-center text-old-grey">Loading...</p>
-  
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border-2 border-old-border p-4">
-          <h3 className="font-bold uppercase tracking-wider mb-4 text-lg">📊 System Health</h3>
-          <div className="space-y-3">
-            <MetricRow label="Available Books" value={stats.available_books || 0} total={stats.total_books || 0} />
-            <MetricRow label="Avg Success Score" value={Math.round(stats.avg_success_score || 0)} total={100} />
-            <MetricRow label="Total Donations" value={stats.total_donations || 0} />
-            <MetricRow label="Total Ideas" value={stats.total_ideas || 0} />
-            <MetricRow label="Total Reviews" value={stats.total_reviews || 0} />
-          </div>
-        </div>
-
-        <div className="border-2 border-old-border p-4">
-          <h3 className="font-bold uppercase tracking-wider mb-4 text-lg">🎯 Quick Actions</h3>
-          <div className="space-y-2">
-            <button className="w-full px-4 py-2 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper transition-all font-bold uppercase text-sm">
-              Export Data
-            </button>
-            <button className="w-full px-4 py-2 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper transition-all font-bold uppercase text-sm">
-              View Audit Logs
-            </button>
-            <button className="w-full px-4 py-2 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper transition-all font-bold uppercase text-sm">
-              System Settings
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function MetricRow({ label, value, total }: any) {
-  return (
-    <div className="flex justify-between items-center text-sm">
-      <span className="text-old-grey uppercase tracking-wider">{label}</span>
-      <span className="font-bold">
-        {value}{total && ` / ${total}`}
-      </span>
-    </div>
-  )
-}
-
-function RequestsTab({ requests, onApprove, onReject }: any) {
-  // Ensure requests is an array
-  const requestList = Array.isArray(requests) ? requests : []
-  
-  if (requestList.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-old-grey uppercase tracking-wider">No pending requests</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-4">
-      {requestList.map((req: any) => (
-        <div key={req.id} className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1">
-              <h3 className="font-bold uppercase text-lg mb-1">{req.book?.title || 'Unknown Book'}</h3>
-              <p className="text-sm text-old-grey mb-2">by {req.book?.author || 'Unknown'}</p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="flex items-center gap-1">
-                  <strong>User:</strong> {req.user?.username || req.user?.full_name}
-                </span>
-                <span className="flex items-center gap-1">
-                  <strong>Score:</strong> {req.user?.success_score || 0}
-                </span>
-                <span className="flex items-center gap-1">
-                  <strong>Priority:</strong> {req.priority_score?.toFixed(1) || 0}
-                </span>
-                <span className="flex items-center gap-1">
-                  <strong>Requested:</strong> {new Date(req.requested_at).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onApprove(req.id)}
-                className="px-4 py-2 border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-bold uppercase text-xs transition-all"
-              >
-                ✓ Approve
-              </button>
-              <button
-                onClick={() => onReject(req.id)}
-                className="px-4 py-2 border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-bold uppercase text-xs transition-all"
-              >
-                ✗ Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function UsersTab({ users, onAdjustScore, onUpdateRole }: any) {
-  // Ensure users is an array
-  const userList = Array.isArray(users) ? users : []
-  
-  return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <table className="w-full border-2 border-old-border">
-          <thead className="bg-old-ink text-old-paper">
-            <tr>
-              <th className="px-4 py-2 text-left uppercase text-xs">Username</th>
-              <th className="px-4 py-2 text-left uppercase text-xs">Email</th>
-              <th className="px-4 py-2 text-center uppercase text-xs">Role</th>
-              <th className="px-4 py-2 text-center uppercase text-xs">Score</th>
-              <th className="px-4 py-2 text-center uppercase text-xs">Books</th>
-              <th className="px-4 py-2 text-center uppercase text-xs">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList.map((user: any) => (
-              <tr key={user.id} className="border-t-2 border-old-border hover:bg-gray-50">
-                <td className="px-4 py-3 font-bold">{user.username}</td>
-                <td className="px-4 py-3 text-sm text-old-grey">{user.email}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`px-2 py-1 text-xs font-bold uppercase ${
-                    user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center font-bold">{user.success_score}</td>
-                <td className="px-4 py-3 text-center text-sm">{user.books_shared}/{user.books_received}</td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => onAdjustScore(user.id, user.username)}
-                      className="px-2 py-1 border border-old-ink text-xs font-bold hover:bg-old-ink hover:text-old-paper transition-all"
-                      title="Adjust score"
-                    >
-                      ±
-                    </button>
-                    <button
-                      onClick={() => onUpdateRole(user.id, user.username, user.role)}
-                      className="px-2 py-1 border border-old-ink text-xs font-bold hover:bg-old-ink hover:text-old-paper transition-all"
-                      title="Toggle role"
-                    >
-                      ⚡
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function BooksTab({ books, showAddBook, setShowAddBook, bookForm, setBookForm, onAddBook }: any) {
-  // Ensure books is an array
-  const bookList = Array.isArray(books) ? books : []
-  
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold uppercase tracking-wider text-lg">Book Management</h3>
-        <button
-          onClick={() => setShowAddBook(!showAddBook)}
-          className="px-4 py-2 border-2 border-old-ink bg-old-ink text-old-paper hover:bg-white hover:text-old-ink font-bold uppercase text-sm transition-all"
-        >
-          {showAddBook ? 'Cancel' : '+ Add Book'}
-        </button>
-      </div>
-
-      {showAddBook && (
-        <form onSubmit={onAddBook} className="border-4 border-old-ink p-6 bg-gray-50 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold uppercase mb-2">Title *</label>
-              <input
-                type="text"
-                value={bookForm.title}
-                onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
-                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold uppercase mb-2">Author *</label>
-              <input
-                type="text"
-                value={bookForm.author}
-                onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
-                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold uppercase mb-2">ISBN</label>
-              <input
-                type="text"
-                value={bookForm.isbn}
-                onChange={(e) => setBookForm({ ...bookForm, isbn: e.target.value })}
-                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold uppercase mb-2">Physical Code *</label>
-              <input
-                type="text"
-                value={bookForm.physical_code}
-                onChange={(e) => setBookForm({ ...bookForm, physical_code: e.target.value })}
-                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-                required
-                placeholder="Unique identifier"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold uppercase mb-2">Category</label>
-              <input
-                type="text"
-                value={bookForm.category}
-                onChange={(e) => setBookForm({ ...bookForm, category: e.target.value })}
-                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-bold uppercase mb-2">Description</label>
-            <textarea
-              value={bookForm.description}
-              onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })}
-              className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
-              rows={3}
-            />
-          </div>
-          <button type="submit" className="px-6 py-3 border-2 border-old-ink bg-old-ink text-old-paper hover:bg-white hover:text-old-ink font-bold uppercase transition-all">
-            Add Book to Library
-          </button>
-        </form>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {bookList.slice(0, 12).map((book: any) => (
-          <div key={book.id} className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
-            <h4 className="font-bold uppercase text-sm mb-1 truncate">{book.title}</h4>
-            <p className="text-xs text-old-grey mb-2">{book.author}</p>
-            <div className="flex justify-between items-center text-xs">
-              <span className={`px-2 py-1 font-bold uppercase ${
-                book.status === 'available' ? 'bg-green-100 text-green-700' :
-                book.status === 'reading' ? 'bg-blue-100 text-blue-700' :
-                'bg-orange-100 text-orange-700'
-              }`}>
-                {book.status}
-              </span>
-              <span className="text-old-grey">Reads: {book.total_reads}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
