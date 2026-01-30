@@ -8,6 +8,10 @@ interface User {
   full_name: string
   role: string
   avatar_url?: string
+  bio?: string
+  location_lat?: number
+  location_lng?: number
+  location_address?: string
   success_score: number
   books_shared: number
   books_received: number
@@ -23,6 +27,7 @@ interface AuthState {
   isAuthenticated: boolean
   _hasHydrated: boolean
   setAuth: (user: User, accessToken: string) => void
+  setUser: (user: User) => void
   logout: () => void
   setHasHydrated: (state: boolean) => void
 }
@@ -37,6 +42,10 @@ export const useAuthStore = create<AuthState>()(
       
       setAuth: (user, accessToken) => {
         set({ user, accessToken, isAuthenticated: true })
+      },
+      
+      setUser: (user) => {
+        set({ user })
       },
       
       logout: () => {

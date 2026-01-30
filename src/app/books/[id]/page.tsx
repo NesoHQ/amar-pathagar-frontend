@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI, ideasAPI } from '@/lib/api'
 import { handoverAPI } from '@/lib/handoverApi'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function BookDetailPage() {
   const params = useParams()
@@ -20,6 +21,19 @@ export default function BookDetailPage() {
   const [isRequested, setIsRequested] = useState(false)
   const [readingStatus, setReadingStatus] = useState<any>(null)
   const [handoverThread, setHandoverThread] = useState<any>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  })
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -70,31 +84,45 @@ export default function BookDetailPage() {
     }
   }
 
-  const handleMarkCompleted = async () => {
-    if (!confirm('Mark this book as reading completed? This will prepare it for handover.')) return
-    
-    try {
-      await handoverAPI.markBookCompleted(params.id as string)
-      success('Book marked as completed!')
-      loadReadingStatus()
-      loadHandoverThread()
-    } catch (err: any) {
-      error(err.response?.data?.error || 'Failed to mark book as completed')
-    }
+  const handleMarkCompleted = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Mark as Completed',
+      message: 'Mark this book as reading completed? This will prepare it for handover.',
+      confirmText: 'Mark Completed',
+      confirmColor: 'green',
+      onConfirm: async () => {
+        try {
+          await handoverAPI.markBookCompleted(params.id as string)
+          success('Book marked as completed!')
+          loadReadingStatus()
+          loadHandoverThread()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to mark book as completed')
+        }
+      }
+    })
   }
 
-  const handleMarkDelivered = async () => {
-    if (!confirm('Confirm that you have received this book?')) return
-    
-    try {
-      await handoverAPI.markBookDelivered(params.id as string)
-      success('Book marked as delivered!')
-      loadReadingStatus()
-      loadHandoverThread()
-      loadBook()
-    } catch (err: any) {
-      error(err.response?.data?.error || 'Failed to mark book as delivered')
-    }
+  const handleMarkDelivered = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Delivery',
+      message: 'Confirm that you have received this book?',
+      confirmText: 'Confirm Delivery',
+      confirmColor: 'green',
+      onConfirm: async () => {
+        try {
+          await handoverAPI.markBookDelivered(params.id as string)
+          success('Book marked as delivered!')
+          loadReadingStatus()
+          loadHandoverThread()
+          loadBook()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to mark book as delivered')
+        }
+      }
+    })
   }
 
   const loadIdeas = async () => {
@@ -662,6 +690,17 @@ export default function BookDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmColor={confirmModal.confirmColor}
+      />
     </Layout>
   )
 }

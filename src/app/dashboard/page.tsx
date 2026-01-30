@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI } from '@/lib/api'
 import { handoverAPI } from '@/lib/handoverApi'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -21,6 +22,19 @@ export default function DashboardPage() {
   const [myCurrentBooks, setMyCurrentBooks] = useState<any[]>([])
   const [readingHistory, setReadingHistory] = useState<any[]>([])
   const [handoverThreads, setHandoverThreads] = useState<any[]>([])
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  })
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -108,18 +122,25 @@ export default function DashboardPage() {
     }
   }
 
-  const handleReturnBook = async (bookId: string, bookTitle: string) => {
-    if (!confirm(`Return "${bookTitle}"? This will make it available for others.`)) return
-    
-    try {
-      await booksAPI.returnBook(bookId)
-      success(`"${bookTitle}" returned successfully!`)
-      loadMyCurrentBooks()
-      loadStats()
-      loadReadingHistory()
-    } catch (err: any) {
-      error(err.response?.data?.error || 'Failed to return book')
-    }
+  const handleReturnBook = (bookId: string, bookTitle: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Return Book',
+      message: `Return "${bookTitle}"? This will make it available for others.`,
+      confirmText: 'Return Book',
+      confirmColor: 'green',
+      onConfirm: async () => {
+        try {
+          await booksAPI.returnBook(bookId)
+          success(`"${bookTitle}" returned successfully!`)
+          loadMyCurrentBooks()
+          loadStats()
+          loadReadingHistory()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to return book')
+        }
+      }
+    })
   }
 
   if (!_hasHydrated || !isAuthenticated || !user) {
@@ -567,6 +588,17 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmColor={confirmModal.confirmColor}
+      />
     </Layout>
   )
 }

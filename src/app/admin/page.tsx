@@ -13,6 +13,7 @@ import OverviewTab from '@/components/admin/OverviewTab'
 import RequestsTab from '@/components/admin/RequestsTab'
 import UsersTab from '@/components/admin/UsersTab'
 import BooksTab from '@/components/admin/BooksTab'
+import ConfirmModal from '@/components/ConfirmModal'
 
 type TabType = 'overview' | 'requests' | 'users' | 'books'
 
@@ -35,6 +36,19 @@ export default function AdminPage() {
     category: '',
     physical_code: '',
     max_reading_days: 14,
+  })
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
   })
 
   useEffect(() => {
@@ -137,14 +151,22 @@ export default function AdminPage() {
 
   const handleUpdateRole = async (userId: string, username: string, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'member' : 'admin'
-    if (!confirm(`Change ${username}'s role to ${newRole}?`)) return
-    try {
-      await adminAPI.updateUserRole(userId, newRole)
-      success('User role updated')
-      loadData()
-    } catch (err: any) {
-      error(err.response?.data?.error || 'Failed to update role')
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update User Role',
+      message: `Change ${username}'s role to ${newRole}?`,
+      confirmText: 'Update Role',
+      confirmColor: 'blue',
+      onConfirm: async () => {
+        try {
+          await adminAPI.updateUserRole(userId, newRole)
+          success('User role updated')
+          loadData()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to update role')
+        }
+      }
+    })
   }
 
   if (!_hasHydrated || !isAuthenticated || user?.role !== 'admin') {
@@ -218,6 +240,16 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmColor={confirmModal.confirmColor}
+      />
     </Layout>
   )
 }
