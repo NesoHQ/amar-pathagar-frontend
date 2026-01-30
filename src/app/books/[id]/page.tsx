@@ -239,10 +239,19 @@ export default function BookDetailPage() {
                     <p className="text-sm font-bold uppercase truncate">{book.category || 'General'}</p>
                   </div>
                   <div className="border-2 border-old-ink p-3 bg-white">
-                    <p className="text-xs uppercase text-old-grey mb-1">ISBN</p>
-                    <p className="text-sm font-bold">{book.isbn || 'N/A'}</p>
+                    <p className="text-xs uppercase text-old-grey mb-1">Reading Period</p>
+                    <p className="text-2xl font-bold">{book.max_reading_days || 14}</p>
+                    <p className="text-xs text-old-grey">days</p>
                   </div>
                 </div>
+
+                {/* ISBN Row */}
+                {book.isbn && (
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1 font-bold">ISBN</p>
+                    <p className="text-sm font-bold">{book.isbn}</p>
+                  </div>
+                )}
 
                 {/* Description */}
                 {book.description && (

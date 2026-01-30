@@ -81,6 +81,20 @@ export default function BooksTab({
                 className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
               />
             </div>
+            <div>
+              <label className="block text-sm font-bold uppercase mb-2">Max Reading Days *</label>
+              <input
+                type="number"
+                value={bookForm.max_reading_days}
+                onChange={(e) => setBookForm({ ...bookForm, max_reading_days: parseInt(e.target.value) || 14 })}
+                className="w-full px-3 py-2 border-2 border-old-border focus:border-old-ink outline-none"
+                required
+                min="1"
+                max="365"
+                placeholder="14"
+              />
+              <p className="text-xs text-old-grey mt-1">How many days can a user keep this book?</p>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-bold uppercase mb-2">Description</label>
@@ -102,7 +116,7 @@ export default function BooksTab({
           <div key={book.id} className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
             <h4 className="font-bold uppercase text-sm mb-1 truncate">{book.title}</h4>
             <p className="text-xs text-old-grey mb-2">{book.author}</p>
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between items-center text-xs mb-2">
               <span className={`px-2 py-1 font-bold uppercase ${
                 book.status === 'available' ? 'bg-green-100 text-green-700' :
                 book.status === 'reading' ? 'bg-blue-100 text-blue-700' :
@@ -111,6 +125,10 @@ export default function BooksTab({
                 {book.status}
               </span>
               <span className="text-old-grey">Reads: {book.total_reads}</span>
+            </div>
+            <div className="text-xs text-old-grey flex items-center gap-1">
+              <span>⏱️</span>
+              <span>{book.max_reading_days || 14} days reading period</span>
             </div>
           </div>
         ))}

@@ -34,6 +34,7 @@ export default function AdminPage() {
     description: '',
     category: '',
     physical_code: '',
+    max_reading_days: 14,
   })
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function AdminPage() {
         description: '',
         category: '',
         physical_code: '',
+        max_reading_days: 14,
       })
       setShowAddBook(false)
       success('Book added successfully!')
