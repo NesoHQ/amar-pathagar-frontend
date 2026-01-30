@@ -1,44 +1,55 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { authAPI } from '@/lib/api'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+import { authAPI } from "@/lib/api";
 
 export default function RegisterPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    full_name: '',
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+    username: "",
+    email: "",
+    password: "",
+    full_name: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      await authAPI.register(formData)
-      router.push('/login?registered=true')
+      await authAPI.register(formData);
+      router.push("/login?registered=true");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed')
+      setError(err.response?.data?.error || "Registration failed");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">📚</div>
-          <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">Amar Pathagar</h1>
-          <p className="text-old-grey uppercase text-sm tracking-widest">Join Our Community</p>
+          <Link
+            href="/"
+            className="inline-block hover:opacity-80 transition-opacity"
+          >
+            <div className="text-6xl mb-4">📚</div>
+            <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">
+              Amar Pathagar
+            </h1>
+            <p className="text-old-grey uppercase text-sm tracking-widest">
+              Join Our Community
+            </p>
+          </Link>
         </div>
 
         {/* Register Form */}
@@ -59,7 +70,9 @@ export default function RegisterPage() {
               <input
                 type="text"
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, full_name: e.target.value })
+                }
                 className="classic-input"
                 required
               />
@@ -72,7 +85,9 @@ export default function RegisterPage() {
               <input
                 type="text"
                 value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
                 className="classic-input"
                 required
               />
@@ -85,7 +100,9 @@ export default function RegisterPage() {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 className="classic-input"
                 required
               />
@@ -95,14 +112,30 @@ export default function RegisterPage() {
               <label className="block text-sm font-bold uppercase tracking-wider mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="classic-input"
-                required
-                minLength={6}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="classic-input pr-12"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-old-grey hover:text-old-ink transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
@@ -110,15 +143,23 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full classic-button disabled:opacity-50"
             >
-              {loading ? 'Creating Account...' : 'Register'}
+              {loading ? "Creating Account..." : "Register"}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
             <p className="text-old-grey text-sm">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link href="/login" className="text-old-ink font-bold underline">
                 Login here
+              </Link>
+            </p>
+            <p className="text-old-grey text-sm">
+              <Link
+                href="/"
+                className="text-old-ink font-bold uppercase tracking-wider hover:underline inline-flex items-center gap-1 justify-center"
+              >
+                ← Back to Home
               </Link>
             </p>
           </div>
@@ -135,5 +176,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
