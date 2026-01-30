@@ -312,8 +312,8 @@ export default function BookDetailPage() {
           </div>
         </div>
 
-        {/* Handover Status Section */}
-        {(readingStatus || handoverThread) && (
+        {/* Handover Status Section - Only show if book is reading or requested */}
+        {(readingStatus || handoverThread) && book.status !== 'available' && (
           <div className="border-4 border-blue-600 bg-white shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)]">
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 border-b-4 border-blue-600 flex items-center gap-2">
               <span className="text-xl">🔄</span>
@@ -406,7 +406,7 @@ export default function BookDetailPage() {
               )}
 
               {/* Next Reader Status */}
-              {!readingStatus && handoverThread && handoverThread.current_holder_id !== user?.id && (
+              {!readingStatus && handoverThread && handoverThread.next_holder_id === user?.id && (
                 <div className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-white p-4">
                   <h3 className="font-bold uppercase text-sm mb-3 flex items-center gap-2">
                     <span className="text-xl">📬</span>
@@ -416,7 +416,7 @@ export default function BookDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-old-grey">Current Holder:</span>
                       <span className="font-bold">
-                        {handoverThread.current_holder?.full_name || handoverThread.current_holder?.username}
+                        {handoverThread.current_holder?.full_name || handoverThread.current_holder?.username || 'Book Owner'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -431,15 +431,40 @@ export default function BookDetailPage() {
                     </div>
                   </div>
 
-                  {handoverThread.delivery_status === 'in_transit' && (
-                    <button
-                      onClick={handleMarkDelivered}
-                      className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white 
-                               hover:bg-green-700 font-bold uppercase text-xs tracking-wider transition-all"
-                    >
-                      ✓ Confirm Delivery Received
-                    </button>
-                  )}
+                  <button
+                    onClick={handleMarkDelivered}
+                    className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white 
+                             hover:bg-green-700 font-bold uppercase text-xs tracking-wider transition-all"
+                  >
+                    ✓ Confirm Delivery Received
+                  </button>
+                </div>
+              )}
+
+              {/* Current Holder Status (for admin/owner sending book) */}
+              {!readingStatus && handoverThread && handoverThread.current_holder_id === user?.id && (
+                <div className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-4">
+                  <h3 className="font-bold uppercase text-sm mb-3 flex items-center gap-2">
+                    <span className="text-xl">📤</span>
+                    Sending Book
+                  </h3>
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Sending To:</span>
+                      <span className="font-bold">
+                        {handoverThread.next_holder?.full_name || handoverThread.next_holder?.username || 'Reader'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Status:</span>
+                      <span className="px-2 py-0.5 text-xs font-bold uppercase bg-orange-600 text-white">
+                        Waiting for delivery confirmation
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-old-grey">
+                    Please coordinate with the reader via the handover thread to arrange delivery.
+                  </p>
                 </div>
               )}
 
