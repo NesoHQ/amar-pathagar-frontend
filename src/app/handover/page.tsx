@@ -25,7 +25,9 @@ export default function HandoverThreadsPage() {
     try {
       const response = await handoverAPI.getUserHandoverThreads()
       const threadsData = response.data.data || response.data || []
-      setThreads(Array.isArray(threadsData) ? threadsData : [])
+      // Filter to only show active threads
+      const activeThreads = Array.isArray(threadsData) ? threadsData.filter((t: any) => t.status === 'active') : []
+      setThreads(activeThreads)
     } catch (error) {
       console.error('Failed to load handover threads:', error)
       setThreads([])

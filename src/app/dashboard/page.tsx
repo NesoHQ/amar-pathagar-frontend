@@ -105,7 +105,9 @@ export default function DashboardPage() {
     try {
       const response = await handoverAPI.getUserHandoverThreads()
       const threadsData = response.data.data || response.data || []
-      setHandoverThreads(Array.isArray(threadsData) ? threadsData : [])
+      // Filter to only show active threads
+      const activeThreads = Array.isArray(threadsData) ? threadsData.filter((t: any) => t.status === 'active') : []
+      setHandoverThreads(activeThreads)
     } catch (error) {
       console.error('Failed to load handover threads:', error)
       setHandoverThreads([])
