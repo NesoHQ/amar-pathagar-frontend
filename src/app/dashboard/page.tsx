@@ -70,156 +70,246 @@ export default function DashboardPage() {
     return null
   }
 
+  const getScoreStatus = (score: number) => {
+    if (score >= 100) return { label: 'Excellent Standing', color: 'text-green-700' }
+    if (score >= 50) return { label: 'Good Standing', color: 'text-blue-700' }
+    if (score >= 20) return { label: 'Fair Standing', color: 'text-yellow-700' }
+    return { label: 'Low Priority', color: 'text-red-700' }
+  }
+
+  const scoreStatus = getScoreStatus(user.success_score)
+
   return (
     <Layout>
       <div className="space-y-6 md:space-y-8">
-        {/* Welcome Section */}
-        <div className="classic-card">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold uppercase tracking-wider mb-2 md:mb-4">
-            Welcome, {user.full_name || user.username}
-          </h1>
-          <p className="text-old-grey text-sm md:text-base lg:text-lg">
-            Your personal library dashboard
-          </p>
-        </div>
-
-        {/* Success Score Card */}
-        <div className="classic-card bg-old-ink text-old-paper">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
-            <div className="text-center sm:text-left">
-              <p className="text-xs md:text-sm uppercase tracking-widest opacity-75 mb-2">Success Score</p>
-              <p className="text-5xl md:text-6xl font-bold">{user.success_score}</p>
-              <p className="text-xs md:text-sm uppercase tracking-wider mt-2 opacity-75">
-                {user.success_score >= 100 ? 'Excellent Standing' : 
-                 user.success_score >= 50 ? 'Good Standing' : 
-                 user.success_score >= 20 ? 'Fair Standing' : 'Low Priority'}
-              </p>
-            </div>
-            <div className="flex sm:flex-col gap-8 sm:gap-4 text-center sm:text-right">
-              <div>
-                <p className="text-2xl md:text-3xl font-bold">{user.books_shared}</p>
-                <p className="text-xs uppercase tracking-wider opacity-75">Books Shared</p>
-              </div>
-              <div>
-                <p className="text-2xl md:text-3xl font-bold">{user.books_received}</p>
-                <p className="text-xs uppercase tracking-wider opacity-75">Books Read</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-          <StatCard
-            title="Total Books"
-            value={stats.totalBooks}
-            subtitle="In Library"
-          />
-          <StatCard
-            title="Available"
-            value={stats.availableBooks}
-            subtitle="Ready to Borrow"
-          />
-          <StatCard
-            title="In Circulation"
-            value={stats.booksReading}
-            subtitle="Currently Reading"
-          />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="classic-card">
-          <h2 className="classic-heading text-xl md:text-2xl">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-            <ActionButton
-              title="Browse Books"
-              description="Explore available books"
-              href="/books"
-              icon="📚"
-            />
-            <ActionButton
-              title="My Library"
-              description="View your books"
-              href="/my-library"
-              icon="📖"
-            />
-            <ActionButton
-              title="Leaderboard"
-              description="Top contributors"
-              href="/leaderboard"
-              icon="🏆"
-            />
-            <ActionButton
-              title="Donate"
-              description="Support the community"
-              href="/donations"
-              icon="🎁"
-            />
-          </div>
-        </div>
-
-        {/* My Book Requests */}
-        {myRequests.length > 0 && (
-          <div className="classic-card">
-            <h2 className="classic-heading text-xl md:text-2xl mb-4">📬 My Book Requests</h2>
-            <div className="space-y-3">
-              {myRequests.map((request: any) => (
-                <div 
-                  key={request.id} 
-                  className="p-3 md:p-4 border-2 border-old-border hover:border-old-ink transition-colors"
-                >
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold uppercase text-sm md:text-base">
-                        {request.book?.title || 'Unknown Book'}
-                      </h3>
-                      <p className="text-xs md:text-sm text-old-grey">
-                        {request.book?.author || 'Unknown Author'}
-                      </p>
-                      <p className="text-xs text-old-grey mt-1">
-                        Requested: {new Date(request.requested_at).toLocaleDateString()}
-                      </p>
+        {/* Compact Header with Score */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Welcome Card */}
+          <div className="lg:col-span-2 border-4 border-old-ink bg-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+            <div className="flex items-center gap-4">
+              <div className="text-5xl">👤</div>
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-wider mb-1">
+                  {user.full_name || user.username}
+                </h1>
+                <p className="text-sm text-old-grey uppercase tracking-wider">
+                  Member Since {new Date(user.created_at || Date.now()).getFullYear()}
+                </p>
+                <div className="flex gap-4 mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">📖</span>
+                    <div>
+                      <p className="text-lg font-bold">{user.books_received}</p>
+                      <p className="text-xs text-old-grey uppercase">Read</p>
                     </div>
-                    <div className="flex gap-2 items-center w-full sm:w-auto">
-                      <span className="vintage-badge text-xs">{request.status}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🤝</span>
+                    <div>
+                      <p className="text-lg font-bold">{user.books_shared}</p>
+                      <p className="text-xs text-old-grey uppercase">Shared</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⭐</span>
+                    <div>
+                      <p className="text-lg font-bold">{user.total_upvotes || 0}</p>
+                      <p className="text-xs text-old-grey uppercase">Upvotes</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Success Score Card */}
+          <div className="border-4 border-old-ink bg-gradient-to-br from-old-ink to-gray-800 text-old-paper p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 text-9xl opacity-10">⭐</div>
+            <div className="relative z-10">
+              <p className="text-xs uppercase tracking-widest opacity-75 mb-2">Success Score</p>
+              <p className="text-6xl font-bold mb-2">{user.success_score}</p>
+              <div className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider border-2 ${
+                user.success_score >= 100 ? 'border-green-400 text-green-400' :
+                user.success_score >= 50 ? 'border-blue-400 text-blue-400' :
+                user.success_score >= 20 ? 'border-yellow-400 text-yellow-400' :
+                'border-red-400 text-red-400'
+              }`}>
+                {scoreStatus.label}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Library Statistics - More Visual */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="border-4 border-old-ink bg-gradient-to-br from-white to-gray-50 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-5 group-hover:opacity-10 transition-opacity">📚</div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-3xl">📚</span>
+                <span className="vintage-badge text-xs">Total</span>
+              </div>
+              <p className="text-5xl font-bold mb-2">{stats.totalBooks}</p>
+              <p className="text-sm uppercase tracking-wider text-old-grey">Books in Collection</p>
+            </div>
+          </div>
+
+          <div className="border-4 border-green-600 bg-gradient-to-br from-green-50 to-green-100 p-6 shadow-[4px_4px_0px_0px_rgba(22,163,74,0.3)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(22,163,74,0.4)] transition-all">
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">✓</div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-3xl">✓</span>
+                <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold uppercase">Available</span>
+              </div>
+              <p className="text-5xl font-bold mb-2 text-green-700">{stats.availableBooks}</p>
+              <p className="text-sm uppercase tracking-wider text-green-800">Ready to Borrow</p>
+            </div>
+          </div>
+
+          <div className="border-4 border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100 p-6 shadow-[4px_4px_0px_0px_rgba(37,99,235,0.3)] relative overflow-hidden group hover:shadow-[6px_6px_0px_0px_rgba(37,99,235,0.4)] transition-all">
+            <div className="absolute -bottom-4 -right-4 text-8xl opacity-10 group-hover:opacity-20 transition-opacity">📖</div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-3xl">📖</span>
+                <span className="px-2 py-1 bg-blue-600 text-white text-xs font-bold uppercase">Active</span>
+              </div>
+              <p className="text-5xl font-bold mb-2 text-blue-700">{stats.booksReading}</p>
+              <p className="text-sm uppercase tracking-wider text-blue-800">In Circulation</p>
+            </div>
+          </div>
+        </div>
+
+        {/* My Book Requests - Enhanced */}
+        {myRequests.length > 0 && (
+          <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+            <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-center gap-3">
+              <span className="text-2xl">📬</span>
+              <h2 className="text-xl md:text-2xl font-bold uppercase tracking-wider">
+                My Book Requests
+              </h2>
+              <span className="px-3 py-1 bg-old-paper text-old-ink text-sm font-bold rounded-full">
+                {myRequests.length}
+              </span>
+            </div>
+            <div className="p-4 md:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {myRequests.map((request: any) => (
+                  <div 
+                    key={request.id} 
+                    className="border-2 border-old-border hover:border-old-ink transition-all p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] group"
+                  >
+                    <div className="flex gap-3 mb-3">
+                      <div className="text-4xl group-hover:scale-110 transition-transform">📕</div>
+                      <div className="flex-1">
+                        <h3 className="font-bold uppercase text-base mb-1 line-clamp-1">
+                          {request.book?.title || 'Unknown Book'}
+                        </h3>
+                        <p className="text-sm text-old-grey mb-2">
+                          by {request.book?.author || 'Unknown Author'}
+                        </p>
+                        <div className="flex flex-wrap gap-2 items-center text-xs">
+                          <span className="vintage-badge">{request.status}</span>
+                          <span className="text-old-grey">
+                            {new Date(request.requested_at).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
                       <button 
-                        className="flex-1 sm:flex-none classic-button-secondary text-xs px-3 py-2"
+                        className="flex-1 px-3 py-2 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
+                                 font-bold uppercase text-xs tracking-wider transition-all"
                         onClick={() => router.push(`/books/${request.book_id}`)}
                       >
                         View
                       </button>
                       <button 
-                        className="flex-1 sm:flex-none px-3 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
-                                 hover:bg-red-600 hover:text-white transition-all"
+                        className="flex-1 px-3 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
+                                 hover:bg-red-600 hover:text-white transition-all tracking-wider"
                         onClick={() => handleCancelRequest(request.book_id, request.book?.title || 'this book')}
                       >
                         Cancel
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Philosophy Box */}
-        <div className="border-2 md:border-4 border-old-ink p-4 md:p-6 bg-white">
-          <p className="text-center font-bold uppercase tracking-wider text-base md:text-lg mb-4">
-            Core Philosophy
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs md:text-sm">
-            <div>
-              <p className="font-bold uppercase">Trust-Based</p>
-              <p className="text-old-grey">Reading Network</p>
+        {/* Quick Navigation - More Visual */}
+        <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink">
+            <h2 className="text-xl md:text-2xl font-bold uppercase tracking-wider text-center flex items-center justify-center gap-3">
+              <span className="text-2xl">🧭</span>
+              Quick Navigation
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <NavCard
+                icon="📚"
+                title="Browse Books"
+                description="Explore collection"
+                onClick={() => router.push('/books')}
+              />
+              <NavCard
+                icon="📖"
+                title="My Library"
+                description="Bookmarks & reads"
+                onClick={() => router.push('/my-library')}
+              />
+              <NavCard
+                icon="🏆"
+                title="Leaderboard"
+                description="Top contributors"
+                onClick={() => router.push('/leaderboard')}
+              />
+              <NavCard
+                icon="🎁"
+                title="Donate"
+                description="Support us"
+                onClick={() => router.push('/donations')}
+              />
             </div>
-            <div>
-              <p className="font-bold uppercase">Knowledge &gt; Hoarding</p>
-              <p className="text-old-grey">Share Wisdom</p>
+          </div>
+        </div>
+
+        {/* Philosophy Banner - More Aesthetic */}
+        <div className="border-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 text-9xl opacity-5">📚</div>
+          <div className="relative z-10">
+            <div className="text-center mb-6">
+              <div className="inline-block px-6 py-2 border-4 border-old-ink bg-white mb-4">
+                <p className="text-xl md:text-2xl font-bold uppercase tracking-widest">Our Philosophy</p>
+              </div>
             </div>
-            <div>
-              <p className="font-bold uppercase">Reputation</p>
-              <p className="text-old-grey">Through Contribution</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
+                <div className="text-center">
+                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">🤝</p>
+                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Trust-Based</p>
+                  <p className="text-xs text-old-grey uppercase">Reading Network</p>
+                </div>
+              </div>
+              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
+                <div className="text-center">
+                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">📖</p>
+                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Knowledge &gt; Hoarding</p>
+                  <p className="text-xs text-old-grey uppercase">Share Wisdom</p>
+                </div>
+              </div>
+              <div className="p-5 border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all group">
+                <div className="text-center">
+                  <p className="text-4xl mb-3 group-hover:scale-110 transition-transform">⭐</p>
+                  <p className="font-bold uppercase tracking-wider mb-2 text-base">Reputation</p>
+                  <p className="text-xs text-old-grey uppercase">Through Contribution</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -228,34 +318,28 @@ export default function DashboardPage() {
   )
 }
 
-function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle: string }) {
-  return (
-    <div className="classic-card text-center">
-      <p className="text-xs md:text-sm uppercase tracking-widest text-old-grey mb-2">{title}</p>
-      <p className="text-4xl md:text-5xl font-bold mb-2">{value}</p>
-      <p className="text-xs uppercase tracking-wider text-old-grey">{subtitle}</p>
-    </div>
-  )
-}
-
-function ActionButton({ title, description, href, icon }: { 
-  title: string; 
-  description: string; 
-  href: string; 
-  icon: string 
+function NavCard({ 
+  icon, 
+  title, 
+  description, 
+  onClick 
+}: { 
+  icon: string
+  title: string
+  description: string
+  onClick: () => void
 }) {
   return (
-    <a
-      href={href}
-      className="block p-3 md:p-4 border-2 border-old-border hover:border-old-ink hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] transition-all"
+    <button
+      onClick={onClick}
+      className="p-5 border-4 border-old-border hover:border-old-ink hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] 
+               transition-all bg-gradient-to-br from-white to-gray-50 group"
     >
-      <div className="flex items-center space-x-3">
-        <span className="text-2xl md:text-3xl">{icon}</span>
-        <div>
-          <p className="font-bold uppercase tracking-wider text-sm md:text-base">{title}</p>
-          <p className="text-xs md:text-sm text-old-grey">{description}</p>
-        </div>
+      <div className="text-center">
+        <div className="text-5xl mb-3 group-hover:scale-125 transition-transform">{icon}</div>
+        <p className="font-bold uppercase tracking-wider text-sm mb-1">{title}</p>
+        <p className="text-xs text-old-grey">{description}</p>
       </div>
-    </a>
+    </button>
   )
 }
