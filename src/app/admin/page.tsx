@@ -46,9 +46,18 @@ export default function AdminPage() {
         adminAPI.getAllBooks(),
       ])
       setStats(statsRes.data.data || statsRes.data)
-      setPendingRequests(requestsRes.data.data || requestsRes.data || [])
-      setUsers(usersRes.data.data || usersRes.data || [])
-      setBooks(booksRes.data.data || booksRes.data || [])
+      
+      // Ensure requests is always an array
+      const requestsData = requestsRes.data.data || requestsRes.data
+      setPendingRequests(Array.isArray(requestsData) ? requestsData : [])
+      
+      // Ensure users is always an array
+      const usersData = usersRes.data.data || usersRes.data
+      setUsers(Array.isArray(usersData) ? usersData : [])
+      
+      // Ensure books is always an array
+      const booksData = booksRes.data.data || booksRes.data
+      setBooks(Array.isArray(booksData) ? booksData : [])
     } catch (err: any) {
       console.error('Failed to load admin data:', err)
       error('Failed to load admin data')
@@ -81,7 +90,8 @@ export default function AdminPage() {
     try {
       await adminAPI.approveRequest(requestId, dueDate.toISOString())
       success('Request approved successfully!')
-      loadData()
+      // Remove the approved request from the list immediately
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId))
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to approve request')
     }
@@ -93,7 +103,8 @@ export default function AdminPage() {
     try {
       await adminAPI.rejectRequest(requestId, reason)
       success('Request rejected')
-      loadData()
+      // Remove the rejected request from the list immediately
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId))
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to reject request')
     }
@@ -286,7 +297,10 @@ function MetricRow({ label, value, total }: any) {
 }
 
 function RequestsTab({ requests, onApprove, onReject }: any) {
-  if (requests.length === 0) {
+  // Ensure requests is an array
+  const requestList = Array.isArray(requests) ? requests : []
+  
+  if (requestList.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-old-grey uppercase tracking-wider">No pending requests</p>
@@ -296,7 +310,7 @@ function RequestsTab({ requests, onApprove, onReject }: any) {
 
   return (
     <div className="space-y-4">
-      {requests.map((req: any) => (
+      {requestList.map((req: any) => (
         <div key={req.id} className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
@@ -339,6 +353,9 @@ function RequestsTab({ requests, onApprove, onReject }: any) {
 }
 
 function UsersTab({ users, onAdjustScore, onUpdateRole }: any) {
+  // Ensure users is an array
+  const userList = Array.isArray(users) ? users : []
+  
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
@@ -354,7 +371,7 @@ function UsersTab({ users, onAdjustScore, onUpdateRole }: any) {
             </tr>
           </thead>
           <tbody>
-            {users.map((user: any) => (
+            {userList.map((user: any) => (
               <tr key={user.id} className="border-t-2 border-old-border hover:bg-gray-50">
                 <td className="px-4 py-3 font-bold">{user.username}</td>
                 <td className="px-4 py-3 text-sm text-old-grey">{user.email}</td>
@@ -395,6 +412,9 @@ function UsersTab({ users, onAdjustScore, onUpdateRole }: any) {
 }
 
 function BooksTab({ books, showAddBook, setShowAddBook, bookForm, setBookForm, onAddBook }: any) {
+  // Ensure books is an array
+  const bookList = Array.isArray(books) ? books : []
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -476,7 +496,7 @@ function BooksTab({ books, showAddBook, setShowAddBook, bookForm, setBookForm, o
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {books.slice(0, 12).map((book: any) => (
+        {bookList.slice(0, 12).map((book: any) => (
           <div key={book.id} className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
             <h4 className="font-bold uppercase text-sm mb-1 truncate">{book.title}</h4>
             <p className="text-xs text-old-grey mb-2">{book.author}</p>
