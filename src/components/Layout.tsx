@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { ToastContainer } from './Toast'
+import NotificationBell from './NotificationBell'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, logout } = useAuthStore()
@@ -58,6 +59,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* Desktop User Info */}
             {isAuthenticated && user && (
               <div className="hidden md:flex items-center space-x-4">
+                <NotificationBell />
                 <div className="text-right">
                   <div className="font-bold text-old-ink text-sm">{user.full_name || user.username}</div>
                   <div className="text-xs text-old-grey uppercase">

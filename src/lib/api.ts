@@ -68,6 +68,8 @@ export const booksAPI = {
   checkRequested: (id: string) => api.get(`/books/${id}/requested`),
   getHistory: (id: string) => api.get(`/books/${id}/history`),
   getMyRequests: () => api.get('/my-requests'),
+  returnBook: (id: string) => api.post(`/books/${id}/return`),
+  getMyReadingHistory: () => api.get('/my-reading-history'),
 }
 
 // User API
