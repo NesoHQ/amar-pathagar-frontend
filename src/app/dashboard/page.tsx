@@ -179,60 +179,96 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* My Book Requests - Enhanced */}
+        {/* My Book Requests - Compact and Classic */}
         {myRequests.length > 0 && (
           <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
-            <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-center gap-3">
-              <span className="text-2xl">📬</span>
-              <h2 className="text-xl md:text-2xl font-bold uppercase tracking-wider">
-                My Book Requests
-              </h2>
-              <span className="px-3 py-1 bg-old-paper text-old-ink text-sm font-bold rounded-full">
+            <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-3 border-b-4 border-old-ink flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📬</span>
+                <h2 className="text-lg md:text-xl font-bold uppercase tracking-wider">
+                  My Book Requests
+                </h2>
+              </div>
+              <span className="px-2 py-1 bg-old-paper text-old-ink text-xs font-bold">
                 {myRequests.length}
               </span>
             </div>
-            <div className="p-4 md:p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="p-4">
+              {/* Table Header - Desktop Only */}
+              <div className="hidden md:grid md:grid-cols-12 gap-3 pb-2 mb-3 border-b-2 border-old-border text-xs uppercase tracking-wider text-old-grey font-bold">
+                <div className="col-span-5">Book</div>
+                <div className="col-span-3">Author</div>
+                <div className="col-span-2">Requested</div>
+                <div className="col-span-2 text-right">Actions</div>
+              </div>
+
+              {/* Book Requests List */}
+              <div className="space-y-2">
                 {myRequests.map((request: any) => (
                   <div 
                     key={request.id} 
-                    className="border-2 border-old-border hover:border-old-ink transition-all p-4 bg-gradient-to-br from-white to-gray-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] group"
+                    className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 border-2 border-old-border hover:border-old-ink transition-all bg-gradient-to-r from-white to-gray-50 items-center"
                   >
-                    <div className="flex gap-3 mb-3">
-                      <div className="text-4xl group-hover:scale-110 transition-transform">📕</div>
-                      <div className="flex-1">
-                        <h3 className="font-bold uppercase text-base mb-1 line-clamp-1">
-                          {request.book?.title || 'Unknown Book'}
-                        </h3>
-                        <p className="text-sm text-old-grey mb-2">
-                          by {request.book?.author || 'Unknown Author'}
-                        </p>
-                        <div className="flex flex-wrap gap-2 items-center text-xs">
-                          <span className="vintage-badge">{request.status}</span>
-                          <span className="text-old-grey">
-                            {new Date(request.requested_at).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric'
-                            })}
-                          </span>
+                    {/* Book Title */}
+                    <div className="md:col-span-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">📕</span>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold uppercase text-sm truncate">
+                            {request.book?.title || 'Unknown Book'}
+                          </h3>
+                          <span className="vintage-badge text-xs mt-1 inline-block">{request.status}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    {/* Author - Desktop */}
+                    <div className="md:col-span-3 hidden md:block">
+                      <p className="text-sm text-old-grey truncate">
+                        {request.book?.author || 'Unknown Author'}
+                      </p>
+                    </div>
+
+                    {/* Date - Desktop */}
+                    <div className="md:col-span-2 hidden md:block">
+                      <p className="text-xs text-old-grey">
+                        {new Date(request.requested_at).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="md:col-span-2 flex gap-2 justify-end">
                       <button 
-                        className="flex-1 px-3 py-2 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
+                        className="px-3 py-1 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
                                  font-bold uppercase text-xs tracking-wider transition-all"
                         onClick={() => router.push(`/books/${request.book_id}`)}
+                        title="View book details"
                       >
                         View
                       </button>
                       <button 
-                        className="flex-1 px-3 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
+                        className="px-3 py-1 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
                                  hover:bg-red-600 hover:text-white transition-all tracking-wider"
                         onClick={() => handleCancelRequest(request.book_id, request.book?.title || 'this book')}
+                        title="Cancel request"
                       >
                         Cancel
                       </button>
+                    </div>
+
+                    {/* Mobile Info */}
+                    <div className="md:hidden text-xs text-old-grey flex items-center gap-3">
+                      <span>{request.book?.author || 'Unknown Author'}</span>
+                      <span>•</span>
+                      <span>
+                        {new Date(request.requested_at).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric'
+                        })}
+                      </span>
                     </div>
                   </div>
                 ))}
