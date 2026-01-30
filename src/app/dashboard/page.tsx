@@ -14,6 +14,7 @@ export default function DashboardPage() {
     availableBooks: 0,
     booksReading: 0,
   })
+  const [myRequests, setMyRequests] = useState<any[]>([])
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isAuthenticated) {
       loadStats()
+      loadMyRequests()
     }
   }, [isAuthenticated])
 
@@ -38,6 +40,17 @@ export default function DashboardPage() {
       })
     } catch (error) {
       console.error('Failed to load stats:', error)
+    }
+  }
+
+  const loadMyRequests = async () => {
+    try {
+      const response = await booksAPI.getMyRequests()
+      const requestsData = response.data.data || response.data || []
+      setMyRequests(Array.isArray(requestsData) ? requestsData : [])
+    } catch (error) {
+      console.error('Failed to load requests:', error)
+      setMyRequests([])
     }
   }
 
@@ -132,6 +145,48 @@ export default function DashboardPage() {
             />
           </div>
         </div>
+
+        {/* My Book Requests */}
+        {myRequests.length > 0 && (
+          <div className="classic-card">
+            <h2 className="classic-heading text-xl md:text-2xl mb-4">📬 My Book Requests</h2>
+            <div className="space-y-3">
+              {myRequests.map((request: any) => (
+                <div 
+                  key={request.id} 
+                  className="p-3 md:p-4 border-2 border-old-border hover:border-old-ink transition-colors cursor-pointer"
+                  onClick={() => router.push(`/books/${request.book_id}`)}
+                >
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-bold uppercase text-sm md:text-base">
+                        {request.book?.title || 'Unknown Book'}
+                      </h3>
+                      <p className="text-xs md:text-sm text-old-grey">
+                        {request.book?.author || 'Unknown Author'}
+                      </p>
+                      <p className="text-xs text-old-grey mt-1">
+                        Requested: {new Date(request.requested_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <span className="vintage-badge text-xs">{request.status}</span>
+                      <button 
+                        className="classic-button-secondary text-xs px-3 py-1"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/books/${request.book_id}`)
+                        }}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Philosophy Box */}
         <div className="border-2 md:border-4 border-old-ink p-4 md:p-6 bg-white">

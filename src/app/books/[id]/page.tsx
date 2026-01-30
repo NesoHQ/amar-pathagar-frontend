@@ -16,6 +16,7 @@ export default function BookDetailPage() {
   const [ideas, setIdeas] = useState<any[]>([])
   const [showIdeaForm, setShowIdeaForm] = useState(false)
   const [ideaForm, setIdeaForm] = useState({ title: '', content: '' })
+  const [isRequested, setIsRequested] = useState(false)
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -23,6 +24,7 @@ export default function BookDetailPage() {
     } else if (isAuthenticated && params.id) {
       loadBook()
       loadIdeas()
+      checkIfRequested()
     }
   }, [isAuthenticated, _hasHydrated, params.id, router])
 
@@ -32,6 +34,15 @@ export default function BookDetailPage() {
       setBook(response.data.data || response.data)
     } catch (error) {
       console.error('Failed to load book:', error)
+    }
+  }
+
+  const checkIfRequested = async () => {
+    try {
+      const response = await booksAPI.checkRequested(params.id as string)
+      setIsRequested(response.data.data?.requested || response.data.requested || false)
+    } catch (error) {
+      console.error('Failed to check request status:', error)
     }
   }
 
@@ -54,6 +65,7 @@ export default function BookDetailPage() {
     try {
       await booksAPI.request(params.id as string)
       success('Book requested successfully!')
+      setIsRequested(true)
       loadBook()
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to request book')
@@ -144,11 +156,18 @@ export default function BookDetailPage() {
 
               {/* Actions */}
               <div className="space-y-2">
-                {book.status === 'available' && (
+                {isRequested ? (
+                  <div className="w-full p-4 border-4 border-green-600 bg-green-50 text-center">
+                    <p className="text-2xl font-bold uppercase text-green-700 tracking-wider">
+                      ✓ Requested
+                    </p>
+                    <p className="text-sm text-green-600 mt-1">You have already requested this book</p>
+                  </div>
+                ) : book.status === 'available' ? (
                   <button onClick={handleRequest} className="w-full classic-button">
                     Request This Book
                   </button>
-                )}
+                ) : null}
                 {book.current_holder && (
                   <div className="p-3 border-2 border-old-ink bg-white">
                     <p className="text-sm font-bold uppercase">Currently With:</p>

@@ -64,7 +64,9 @@ export const booksAPI = {
   update: (id: string, data: any) => api.patch(`/books/${id}`, data),
   delete: (id: string) => api.delete(`/books/${id}`),
   request: (id: string) => api.post(`/books/${id}/request`),
+  checkRequested: (id: string) => api.get(`/books/${id}/requested`),
   getHistory: (id: string) => api.get(`/books/${id}/history`),
+  getMyRequests: () => api.get('/my-requests'),
 }
 
 // User API
