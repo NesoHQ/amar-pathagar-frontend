@@ -6,6 +6,7 @@ import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI } from '@/lib/api'
+import { handoverAPI } from '@/lib/handoverApi'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const [myRequests, setMyRequests] = useState<any[]>([])
   const [myCurrentBooks, setMyCurrentBooks] = useState<any[]>([])
   const [readingHistory, setReadingHistory] = useState<any[]>([])
+  const [handoverThreads, setHandoverThreads] = useState<any[]>([])
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -32,6 +34,7 @@ export default function DashboardPage() {
       loadMyRequests()
       loadMyCurrentBooks()
       loadReadingHistory()
+      loadHandoverThreads()
     }
   }, [isAuthenticated])
 
@@ -81,6 +84,17 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to load reading history:', error)
       setReadingHistory([])
+    }
+  }
+
+  const loadHandoverThreads = async () => {
+    try {
+      const response = await handoverAPI.getUserHandoverThreads()
+      const threadsData = response.data.data || response.data || []
+      setHandoverThreads(Array.isArray(threadsData) ? threadsData : [])
+    } catch (error) {
+      console.error('Failed to load handover threads:', error)
+      setHandoverThreads([])
     }
   }
 
@@ -370,6 +384,75 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Active Handover Threads */}
+        {handoverThreads.length > 0 && (
+          <div className="border-4 border-orange-600 bg-white shadow-[6px_6px_0px_0px_rgba(234,88,12,0.3)]">
+            <div className="bg-gradient-to-r from-orange-600 to-orange-800 text-white p-3 border-b-4 border-orange-600 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔄</span>
+                <h2 className="text-lg md:text-xl font-bold uppercase tracking-wider">
+                  Active Handovers
+                </h2>
+              </div>
+              <span className="px-2 py-1 bg-white text-orange-600 text-xs font-bold">
+                {handoverThreads.length}
+              </span>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                {handoverThreads.map((thread: any) => (
+                  <div 
+                    key={thread.id} 
+                    className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-white p-4 hover:border-orange-600 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold uppercase text-sm mb-2 truncate">
+                          {thread.book?.title || 'Unknown Book'}
+                        </h3>
+                        <div className="space-y-1 text-xs text-old-grey mb-3">
+                          <div className="flex items-center gap-2">
+                            <span>From:</span>
+                            <span className="font-bold text-old-ink">
+                              {thread.current_holder?.full_name || thread.current_holder?.username}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span>To:</span>
+                            <span className="font-bold text-old-ink">
+                              {thread.next_reader?.full_name || thread.next_reader?.username}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span>Status:</span>
+                            <span className={`px-2 py-0.5 text-xs font-bold uppercase ${
+                              thread.delivery_status === 'delivered'
+                                ? 'bg-green-600 text-white'
+                                : thread.delivery_status === 'in_transit'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-600 text-white'
+                            }`}>
+                              {thread.delivery_status?.replace('_', ' ') || 'Not Started'}
+                            </span>
+                          </div>
+                        </div>
+                        <button 
+                          className="px-4 py-2 border-2 border-orange-600 bg-white text-orange-600 hover:bg-orange-600 hover:text-white 
+                                   font-bold uppercase text-xs tracking-wider transition-all"
+                          onClick={() => router.push(`/handover/${thread.id}`)}
+                        >
+                          Open Thread →
+                        </button>
+                      </div>
+                      <span className="text-3xl">💬</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Reading History */}
         {readingHistory.length > 0 && (
           <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
@@ -461,6 +544,12 @@ export default function DashboardPage() {
                 title="Donate"
                 description="Support us"
                 onClick={() => router.push('/donations')}
+              />
+              <NavCard
+                icon="🔄"
+                title="Handovers"
+                description="Book exchanges"
+                onClick={() => router.push('/handover')}
               />
               <NavCard
                 icon="✏️"

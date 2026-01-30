@@ -289,6 +289,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             collapsed={!sidebarOpen}
             onClick={handleNavClick}
           />
+          <SidebarLink 
+            href="/handover" 
+            icon="🔄" 
+            label="Handovers" 
+            active={isActive('/handover')}
+            collapsed={!sidebarOpen}
+            onClick={handleNavClick}
+          />
           
           {user?.role === 'admin' && (
             <>
