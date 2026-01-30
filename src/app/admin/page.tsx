@@ -4,11 +4,29 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { booksAPI } from '@/lib/api'
+import { adminAPI } from '@/lib/adminApi'
+import StatCard from '@/components/admin/StatCard'
+import TabButton from '@/components/admin/TabButton'
+import OverviewTab from '@/components/admin/OverviewTab'
+import RequestsTab from '@/components/admin/RequestsTab'
+import UsersTab from '@/components/admin/UsersTab'
+import BooksTab from '@/components/admin/BooksTab'
+import ConfirmModal from '@/components/ConfirmModal'
+
+type TabType = 'overview' | 'requests' | 'users' | 'books'
 
 export default function AdminPage() {
   const router = useRouter()
   const { isAuthenticated, user, _hasHydrated } = useAuthStore()
+  const { success, error } = useToastStore()
+  
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
+  const [stats, setStats] = useState<any>(null)
+  const [pendingRequests, setPendingRequests] = useState<any[]>([])
+  const [users, setUsers] = useState<any[]>([])
+  const [books, setBooks] = useState<any[]>([])
   const [showAddBook, setShowAddBook] = useState(false)
   const [bookForm, setBookForm] = useState({
     title: '',
@@ -17,6 +35,20 @@ export default function AdminPage() {
     description: '',
     category: '',
     physical_code: '',
+    max_reading_days: 14,
+  })
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
   })
 
   useEffect(() => {
@@ -24,10 +56,36 @@ export default function AdminPage() {
       router.push('/login')
     } else if (_hasHydrated && isAuthenticated && user?.role !== 'admin') {
       router.push('/dashboard')
+    } else if (_hasHydrated && isAuthenticated && user?.role === 'admin') {
+      loadData()
     }
   }, [isAuthenticated, user, _hasHydrated, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const loadData = async () => {
+    try {
+      const [statsRes, requestsRes, usersRes, booksRes] = await Promise.all([
+        adminAPI.getStats(),
+        adminAPI.getPendingRequests(),
+        adminAPI.getAllUsers(),
+        adminAPI.getAllBooks(),
+      ])
+      setStats(statsRes.data.data || statsRes.data)
+      
+      const requestsData = requestsRes.data.data || requestsRes.data
+      setPendingRequests(Array.isArray(requestsData) ? requestsData : [])
+      
+      const usersData = usersRes.data.data || usersRes.data
+      setUsers(Array.isArray(usersData) ? usersData : [])
+      
+      const booksData = booksRes.data.data || booksRes.data
+      setBooks(Array.isArray(booksData) ? booksData : [])
+    } catch (err: any) {
+      console.error('Failed to load admin data:', err)
+      error('Failed to load admin data')
+    }
+  }
+
+  const handleAddBook = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       await booksAPI.create(bookForm)
@@ -38,12 +96,77 @@ export default function AdminPage() {
         description: '',
         category: '',
         physical_code: '',
+        max_reading_days: 14,
       })
       setShowAddBook(false)
-      alert('Book added successfully!')
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to add book')
+      success('Book added successfully!')
+      loadData()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to add book')
     }
+  }
+
+  const handleApproveRequest = async (requestId: string) => {
+    const dueDate = new Date()
+    dueDate.setDate(dueDate.getDate() + 14)
+    try {
+      await adminAPI.approveRequest(requestId, dueDate.toISOString())
+      success('Request approved successfully!')
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId))
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to approve request')
+    }
+  }
+
+  const handleRejectRequest = async (requestId: string) => {
+    const reason = prompt('Enter rejection reason:')
+    if (!reason) return
+    try {
+      await adminAPI.rejectRequest(requestId, reason)
+      success('Request rejected')
+      setPendingRequests(prev => prev.filter(req => req.id !== requestId))
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to reject request')
+    }
+  }
+
+  const handleAdjustScore = async (userId: string, username: string) => {
+    const amountStr = prompt(`Adjust success score for ${username}:\nEnter amount (positive or negative):`)
+    if (!amountStr) return
+    const amount = parseInt(amountStr)
+    if (isNaN(amount)) {
+      error('Invalid amount')
+      return
+    }
+    const reason = prompt('Enter reason for adjustment:')
+    if (!reason) return
+    try {
+      await adminAPI.adjustSuccessScore(userId, amount, reason)
+      success('Success score adjusted')
+      loadData()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to adjust score')
+    }
+  }
+
+  const handleUpdateRole = async (userId: string, username: string, currentRole: string) => {
+    const newRole = currentRole === 'admin' ? 'member' : 'admin'
+    setConfirmModal({
+      isOpen: true,
+      title: 'Update User Role',
+      message: `Change ${username}'s role to ${newRole}?`,
+      confirmText: 'Update Role',
+      confirmColor: 'blue',
+      onConfirm: async () => {
+        try {
+          await adminAPI.updateUserRole(userId, newRole)
+          success('User role updated')
+          loadData()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to update role')
+        }
+      }
+    })
   }
 
   if (!_hasHydrated || !isAuthenticated || user?.role !== 'admin') {
@@ -54,145 +177,79 @@ export default function AdminPage() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="classic-card">
-          <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">⚙️ Admin Panel</h1>
-          <p className="text-old-grey">Manage the library system</p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="classic-card text-center">
-            <p className="text-3xl font-bold">--</p>
-            <p className="text-xs uppercase text-old-grey mt-2">Total Users</p>
-          </div>
-          <div className="classic-card text-center">
-            <p className="text-3xl font-bold">--</p>
-            <p className="text-xs uppercase text-old-grey mt-2">Total Books</p>
-          </div>
-          <div className="classic-card text-center">
-            <p className="text-3xl font-bold">--</p>
-            <p className="text-xs uppercase text-old-grey mt-2">Active Requests</p>
-          </div>
-          <div className="classic-card text-center">
-            <p className="text-3xl font-bold">--</p>
-            <p className="text-xs uppercase text-old-grey mt-2">In Circulation</p>
-          </div>
-        </div>
-
-        {/* Add Book Section */}
-        <div className="classic-card">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold uppercase tracking-wider">Book Management</h2>
-            <button
-              onClick={() => setShowAddBook(!showAddBook)}
-              className="classic-button"
-            >
-              {showAddBook ? 'Cancel' : 'Add New Book'}
-            </button>
-          </div>
-
-          {showAddBook && (
-            <form onSubmit={handleSubmit} className="space-y-4 p-4 border-2 border-old-border">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Title *</label>
-                  <input
-                    type="text"
-                    value={bookForm.title}
-                    onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
-                    className="classic-input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Author *</label>
-                  <input
-                    type="text"
-                    value={bookForm.author}
-                    onChange={(e) => setBookForm({ ...bookForm, author: e.target.value })}
-                    className="classic-input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">ISBN</label>
-                  <input
-                    type="text"
-                    value={bookForm.isbn}
-                    onChange={(e) => setBookForm({ ...bookForm, isbn: e.target.value })}
-                    className="classic-input"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Physical Code *</label>
-                  <input
-                    type="text"
-                    value={bookForm.physical_code}
-                    onChange={(e) => setBookForm({ ...bookForm, physical_code: e.target.value })}
-                    className="classic-input"
-                    required
-                    placeholder="Unique identifier"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Category</label>
-                  <input
-                    type="text"
-                    value={bookForm.category}
-                    onChange={(e) => setBookForm({ ...bookForm, category: e.target.value })}
-                    className="classic-input"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold uppercase mb-2">Description</label>
-                <textarea
-                  value={bookForm.description}
-                  onChange={(e) => setBookForm({ ...bookForm, description: e.target.value })}
-                  className="classic-input"
-                  rows={3}
-                />
-              </div>
-              <button type="submit" className="classic-button">
-                Add Book to Library
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* Admin Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="classic-card">
-            <h3 className="font-bold uppercase tracking-wider mb-4">User Management</h3>
-            <div className="space-y-2">
-              <button className="w-full classic-button-secondary text-sm py-2">
-                View All Users
-              </button>
-              <button className="w-full classic-button-secondary text-sm py-2">
-                Adjust Success Scores
-              </button>
-              <button className="w-full classic-button-secondary text-sm py-2">
-                View Audit Logs
-              </button>
+        <div className="border-4 border-old-ink bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center gap-3">
+            <span className="text-5xl">⚙️</span>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wider">Admin Panel</h1>
+              <p className="text-old-paper opacity-75 text-sm uppercase tracking-wider">System Management & Control</p>
             </div>
           </div>
+        </div>
 
-          <div className="classic-card">
-            <h3 className="font-bold uppercase tracking-wider mb-4">Book Requests</h3>
-            <div className="space-y-2">
-              <button className="w-full classic-button-secondary text-sm py-2">
-                Pending Requests
-              </button>
-              <button className="w-full classic-button-secondary text-sm py-2">
-                Approve/Reject
-              </button>
-              <button className="w-full classic-button-secondary text-sm py-2">
-                Dispute Resolution
-              </button>
-            </div>
+        {/* Stats Overview */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard icon="👥" label="Total Users" value={stats.total_users || 0} color="blue" />
+            <StatCard icon="📚" label="Total Books" value={stats.total_books || 0} color="green" />
+            <StatCard icon="📬" label="Pending Requests" value={stats.pending_requests || 0} color="orange" />
+            <StatCard icon="📖" label="In Circulation" value={stats.books_in_circulation || 0} color="purple" />
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="flex border-b-4 border-old-ink overflow-x-auto">
+            <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} label="Overview" />
+            <TabButton active={activeTab === 'requests'} onClick={() => setActiveTab('requests')} label={`Requests (${pendingRequests.length})`} />
+            <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="Users" />
+            <TabButton active={activeTab === 'books'} onClick={() => setActiveTab('books')} label="Books" />
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'overview' && (
+              <OverviewTab stats={stats} onNavigate={setActiveTab} />
+            )}
+
+            {activeTab === 'requests' && (
+              <RequestsTab 
+                requests={pendingRequests} 
+                onApprove={handleApproveRequest}
+                onReject={handleRejectRequest}
+              />
+            )}
+
+            {activeTab === 'users' && (
+              <UsersTab 
+                users={users}
+                onAdjustScore={handleAdjustScore}
+                onUpdateRole={handleUpdateRole}
+              />
+            )}
+
+            {activeTab === 'books' && (
+              <BooksTab 
+                books={books}
+                showAddBook={showAddBook}
+                setShowAddBook={setShowAddBook}
+                bookForm={bookForm}
+                setBookForm={setBookForm}
+                onAddBook={handleAddBook}
+              />
+            )}
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmColor={confirmModal.confirmColor}
+      />
     </Layout>
   )
 }

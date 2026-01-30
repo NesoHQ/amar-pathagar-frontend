@@ -66,8 +66,10 @@ export const booksAPI = {
   request: (id: string) => api.post(`/books/${id}/request`),
   cancelRequest: (id: string) => api.delete(`/books/${id}/request`),
   checkRequested: (id: string) => api.get(`/books/${id}/requested`),
-  getHistory: (id: string) => api.get(`/books/${id}/history`),
   getMyRequests: () => api.get('/my-requests'),
+  returnBook: (id: string) => api.post(`/books/${id}/return`),
+  getMyReadingHistory: () => api.get('/my-reading-history'),
+  getMyBooksOnHold: () => api.get('/my-books-on-hold'),
 }
 
 // User API

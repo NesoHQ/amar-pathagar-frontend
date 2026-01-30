@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { booksAPI, ideasAPI, reviewsAPI } from '@/lib/api'
+import { booksAPI, ideasAPI } from '@/lib/api'
+import { handoverAPI } from '@/lib/handoverApi'
+import ConfirmModal from '@/components/ConfirmModal'
 
 export default function BookDetailPage() {
   const params = useParams()
@@ -17,6 +19,21 @@ export default function BookDetailPage() {
   const [showIdeaForm, setShowIdeaForm] = useState(false)
   const [ideaForm, setIdeaForm] = useState({ title: '', content: '' })
   const [isRequested, setIsRequested] = useState(false)
+  const [readingStatus, setReadingStatus] = useState<any>(null)
+  const [handoverThread, setHandoverThread] = useState<any>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    confirmColor?: 'red' | 'green' | 'blue' | 'orange'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  })
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -25,6 +42,8 @@ export default function BookDetailPage() {
       loadBook()
       loadIdeas()
       checkIfRequested()
+      loadReadingStatus()
+      loadHandoverThread()
     }
   }, [isAuthenticated, _hasHydrated, params.id, router])
 
@@ -44,6 +63,66 @@ export default function BookDetailPage() {
     } catch (error) {
       console.error('Failed to check request status:', error)
     }
+  }
+
+  const loadReadingStatus = async () => {
+    try {
+      const response = await handoverAPI.getReadingStatus(params.id as string)
+      setReadingStatus(response.data.data || response.data)
+    } catch (error) {
+      // Not the current holder, ignore
+      setReadingStatus(null)
+    }
+  }
+
+  const loadHandoverThread = async () => {
+    try {
+      const response = await handoverAPI.getActiveHandoverThread(params.id as string)
+      setHandoverThread(response.data.data || response.data)
+    } catch (error) {
+      setHandoverThread(null)
+    }
+  }
+
+  const handleMarkCompleted = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Mark as Completed',
+      message: 'Mark this book as reading completed? This will prepare it for handover.',
+      confirmText: 'Mark Completed',
+      confirmColor: 'green',
+      onConfirm: async () => {
+        try {
+          await handoverAPI.markBookCompleted(params.id as string)
+          success('Book marked as completed!')
+          loadReadingStatus()
+          loadHandoverThread()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to mark book as completed')
+        }
+      }
+    })
+  }
+
+  const handleMarkDelivered = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Delivery',
+      message: 'Confirm that you have received this book?',
+      confirmText: 'Confirm Delivery',
+      confirmColor: 'green',
+      onConfirm: async () => {
+        try {
+          await handoverAPI.markBookDelivered(params.id as string)
+          success('Book marked as delivered!')
+          loadReadingStatus()
+          loadHandoverThread()
+          loadBook()
+        } catch (err: any) {
+          error(err.response?.data?.error || 'Failed to mark book as delivered')
+        }
+      }
+    })
   }
 
   const loadIdeas = async () => {
@@ -118,6 +197,7 @@ export default function BookDetailPage() {
       available: 'bg-green-600',
       reading: 'bg-blue-600',
       requested: 'bg-orange-600',
+      on_hold: 'bg-yellow-600',
     }
     return colors[status as keyof typeof colors] || colors.available
   }
@@ -188,10 +268,19 @@ export default function BookDetailPage() {
                     <p className="text-sm font-bold uppercase truncate">{book.category || 'General'}</p>
                   </div>
                   <div className="border-2 border-old-ink p-3 bg-white">
-                    <p className="text-xs uppercase text-old-grey mb-1">ISBN</p>
-                    <p className="text-sm font-bold">{book.isbn || 'N/A'}</p>
+                    <p className="text-xs uppercase text-old-grey mb-1">Reading Period</p>
+                    <p className="text-2xl font-bold">{book.max_reading_days || 14}</p>
+                    <p className="text-xs text-old-grey">days</p>
                   </div>
                 </div>
+
+                {/* ISBN Row */}
+                {book.isbn && (
+                  <div className="border-2 border-old-ink p-3 bg-white">
+                    <p className="text-xs uppercase text-old-grey mb-1 font-bold">ISBN</p>
+                    <p className="text-sm font-bold">{book.isbn}</p>
+                  </div>
+                )}
 
                 {/* Description */}
                 {book.description && (
@@ -229,13 +318,21 @@ export default function BookDetailPage() {
                         Cancel Request
                       </button>
                     </>
-                  ) : book.status === 'available' ? (
+                  ) : book.status === 'available' || book.status === 'on_hold' ? (
                     <button 
                       onClick={handleRequest} 
                       className="flex-1 px-6 py-3 border-2 border-old-ink bg-old-ink text-old-paper font-bold uppercase text-sm
                                hover:bg-white hover:text-old-ink transition-all"
                     >
                       Request This Book
+                    </button>
+                  ) : book.status === 'reading' && book.current_holder_id === user?.id ? (
+                    <button
+                      onClick={handleMarkCompleted}
+                      className="flex-1 px-6 py-3 border-2 border-green-600 bg-green-600 text-white 
+                               hover:bg-green-700 font-bold uppercase text-sm tracking-wider transition-all"
+                    >
+                      ✓ Mark as Completed
                     </button>
                   ) : null}
                 </div>
@@ -251,6 +348,189 @@ export default function BookDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Handover Status Section - Only show if book is reading or requested */}
+        {(readingStatus || handoverThread) && book.status !== 'available' && (
+          <div className="border-4 border-blue-600 bg-white shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)]">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 border-b-4 border-blue-600 flex items-center gap-2">
+              <span className="text-xl">🔄</span>
+              <h2 className="text-xl font-bold uppercase tracking-wider">Book Handover Status</h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Reading Status for Current Holder */}
+              {readingStatus && (
+                <div className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-4">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-bold uppercase text-sm mb-2 flex items-center gap-2">
+                        <span className="text-xl">📖</span>
+                        Your Reading Status
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        {readingStatus.due_date && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-old-grey">Due Date:</span>
+                            <span className="font-bold">
+                              {new Date(readingStatus.due_date).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                            {new Date(readingStatus.due_date) < new Date() && (
+                              <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-bold uppercase">
+                                Overdue
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="text-old-grey">Status:</span>
+                          <span className={`px-2 py-0.5 text-xs font-bold uppercase ${
+                            readingStatus.is_completed 
+                              ? 'bg-green-600 text-white' 
+                              : 'bg-blue-600 text-white'
+                          }`}>
+                            {readingStatus.is_completed ? 'Completed' : 'Reading'}
+                          </span>
+                        </div>
+                        {readingStatus.delivery_status && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-old-grey">Delivery:</span>
+                            <span className={`px-2 py-0.5 text-xs font-bold uppercase ${
+                              readingStatus.delivery_status === 'delivered' 
+                                ? 'bg-green-600 text-white'
+                                : readingStatus.delivery_status === 'in_transit'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-600 text-white'
+                            }`}>
+                              {readingStatus.delivery_status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        )}
+                        {readingStatus.next_reader && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-old-grey">Next Reader:</span>
+                            <span className="font-bold">
+                              {readingStatus.next_reader.full_name || readingStatus.next_reader.username}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    {!readingStatus.is_completed && (
+                      <button
+                        onClick={handleMarkCompleted}
+                        className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white 
+                                 hover:bg-green-700 font-bold uppercase text-xs tracking-wider transition-all"
+                      >
+                        ✓ Mark as Completed
+                      </button>
+                    )}
+                    {readingStatus.is_completed && readingStatus.delivery_status === 'not_started' && (
+                      <div className="px-4 py-2 border-2 border-orange-600 bg-orange-50 text-orange-700 
+                                    font-bold uppercase text-xs tracking-wider">
+                        ⏳ Waiting for handover coordination
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Next Reader Status */}
+              {!readingStatus && handoverThread && handoverThread.next_holder_id === user?.id && (
+                <div className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-white p-4">
+                  <h3 className="font-bold uppercase text-sm mb-3 flex items-center gap-2">
+                    <span className="text-xl">📬</span>
+                    You're Next in Line!
+                  </h3>
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Current Holder:</span>
+                      <span className="font-bold">
+                        {handoverThread.current_holder?.full_name || handoverThread.current_holder?.username || 'Book Owner'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Delivery Status:</span>
+                      <span className={`px-2 py-0.5 text-xs font-bold uppercase ${
+                        handoverThread.delivery_status === 'in_transit'
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-gray-600 text-white'
+                      }`}>
+                        {handoverThread.delivery_status?.replace('_', ' ') || 'Not Started'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleMarkDelivered}
+                    className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white 
+                             hover:bg-green-700 font-bold uppercase text-xs tracking-wider transition-all"
+                  >
+                    ✓ Confirm Delivery Received
+                  </button>
+                </div>
+              )}
+
+              {/* Current Holder Status (for admin/owner sending book) */}
+              {!readingStatus && handoverThread && handoverThread.current_holder_id === user?.id && (
+                <div className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-4">
+                  <h3 className="font-bold uppercase text-sm mb-3 flex items-center gap-2">
+                    <span className="text-xl">📤</span>
+                    Sending Book
+                  </h3>
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Sending To:</span>
+                      <span className="font-bold">
+                        {handoverThread.next_holder?.full_name || handoverThread.next_holder?.username || 'Reader'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-old-grey">Status:</span>
+                      <span className="px-2 py-0.5 text-xs font-bold uppercase bg-orange-600 text-white">
+                        Waiting for delivery confirmation
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-old-grey">
+                    Please coordinate with the reader via the handover thread to arrange delivery.
+                  </p>
+                </div>
+              )}
+
+              {/* Handover Thread Link */}
+              {handoverThread && handoverThread.id && (
+                <div className="border-2 border-old-ink bg-old-paper p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="font-bold uppercase text-sm mb-1 flex items-center gap-2">
+                        <span className="text-xl">💬</span>
+                        Handover Coordination Thread
+                      </h3>
+                      <p className="text-xs text-old-grey">
+                        Coordinate the book handover with the other party
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => router.push(`/handover/${handoverThread.id}`)}
+                      className="px-4 py-2 border-2 border-old-ink bg-old-ink text-old-paper 
+                               hover:bg-white hover:text-old-ink font-bold uppercase text-xs tracking-wider transition-all"
+                    >
+                      Open Thread →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Reading Ideas Section - Thread View */}
         <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
@@ -419,6 +699,17 @@ export default function BookDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        confirmColor={confirmModal.confirmColor}
+      />
     </Layout>
   )
 }
