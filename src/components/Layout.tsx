@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     logout()
-    router.push('/login')
+    router.push('/')
   }
 
   const isActive = (path: string) => pathname === path
