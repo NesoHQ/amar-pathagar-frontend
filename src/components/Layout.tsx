@@ -39,10 +39,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const isActive = (path: string) => pathname === path
 
-  const closeSidebarOnMobile = () => {
+  const handleNavClick = () => {
+    // Only close sidebar on mobile after navigation
     if (isMobile) {
       setSidebarOpen(false)
     }
+    // On desktop, keep the sidebar state as-is (don't change it)
   }
 
   if (!isAuthenticated) {
@@ -95,7 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           
           <div className="relative z-10 flex items-start justify-between">
             {sidebarOpen ? (
-              <Link href="/dashboard" className="block flex-1" onClick={closeSidebarOnMobile}>
+              <Link href="/dashboard" className="block flex-1" onClick={handleNavClick}>
                 <div className="flex items-center gap-3">
                   <div className="text-5xl filter drop-shadow-lg">📚</div>
                   <div>
@@ -109,7 +111,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </Link>
             ) : (
-              <Link href="/dashboard" className="flex justify-center flex-1" onClick={closeSidebarOnMobile}>
+              <Link href="/dashboard" className="flex justify-center flex-1" onClick={handleNavClick}>
                 <div className="text-5xl filter drop-shadow-lg">📚</div>
               </Link>
             )}
@@ -144,7 +146,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             ${sidebarOpen ? 'p-4' : 'p-3'}
           `}>
             <button
-              onClick={() => { router.push('/profile/edit'); closeSidebarOnMobile(); }}
+              onClick={() => { 
+                router.push('/profile/edit'); 
+                if (isMobile) setSidebarOpen(false);
+              }}
               className={`
                 w-full text-left 
                 hover:bg-old-paper transition-all duration-200
@@ -199,6 +204,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
+        {/* Maximize Button - Only visible when collapsed on desktop */}
+        {!sidebarOpen && !isMobile && (
+          <div className="px-2 py-3 border-b-2 border-old-border bg-gradient-to-br from-white to-gray-50">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="w-full p-3 bg-old-paper text-old-ink
+                       border-2 border-old-ink
+                       hover:bg-old-ink hover:text-old-paper
+                       transition-all duration-200
+                       shadow-md hover:shadow-lg
+                       group flex justify-center"
+              title="Expand sidebar"
+            >
+              <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
           <SidebarLink 
@@ -207,7 +232,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="Dashboard" 
             active={isActive('/dashboard')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/books" 
@@ -215,7 +240,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="Books" 
             active={isActive('/books')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/my-library" 
@@ -223,7 +248,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="My Library" 
             active={isActive('/my-library')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/reading-history" 
@@ -231,7 +256,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="History" 
             active={isActive('/reading-history')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/reviews" 
@@ -239,7 +264,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="Reviews" 
             active={isActive('/reviews')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/leaderboard" 
@@ -247,7 +272,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="Leaderboard" 
             active={isActive('/leaderboard')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           <SidebarLink 
             href="/donations" 
@@ -255,7 +280,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label="Donations" 
             active={isActive('/donations')}
             collapsed={!sidebarOpen}
-            onClick={closeSidebarOnMobile}
+            onClick={handleNavClick}
           />
           
           {user?.role === 'admin' && (
@@ -267,7 +292,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 label="Admin Panel" 
                 active={isActive('/admin')}
                 collapsed={!sidebarOpen}
-                onClick={closeSidebarOnMobile}
+                onClick={handleNavClick}
                 isAdmin
               />
             </>
