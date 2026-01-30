@@ -16,16 +16,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
 
+  // Initialize mobile state only once
   useEffect(() => {
-    const checkMobile = () => {
+    const mobile = window.innerWidth < 1024
+    setIsMobile(mobile)
+    setSidebarOpen(!mobile) // Start collapsed on mobile, expanded on desktop
+  }, [])
+
+  // Only track window resize for mobile detection, don't change sidebar state
+  useEffect(() => {
+    const handleResize = () => {
       setIsMobile(window.innerWidth < 1024)
-      if (window.innerWidth < 1024) {
-        setSidebarOpen(false)
-      }
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const handleLogout = () => {
@@ -41,231 +45,301 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen old-paper-texture">
+        <ToastContainer toasts={toasts} onClose={removeToast} />
+        <main className="w-full px-4 py-8">
+          {children}
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen old-paper-texture">
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
       
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      {isAuthenticated && (
-        <>
-          {/* Overlay for mobile */}
-          {isMobile && sidebarOpen && (
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
-              onClick={() => setSidebarOpen(false)}
-            />
-          )}
-
-          {/* Sidebar */}
-          <aside className={`
-            fixed lg:sticky top-0 left-0 h-screen z-50
-            bg-white border-r-4 border-old-ink shadow-lg
-            transition-all duration-300 ease-in-out
-            ${sidebarOpen ? 'w-64' : 'w-16'}
-            ${isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}
-          `}>
-            <div className="flex flex-col h-full">
-              {/* Logo & Toggle */}
-              <div className="p-4 border-b-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50">
-                <div className="flex items-center justify-between">
-                  {sidebarOpen ? (
-                    <Link href="/dashboard" className="flex items-center gap-2" onClick={closeSidebarOnMobile}>
-                      <span className="text-3xl">📚</span>
-                      <div>
-                        <h1 className="text-lg font-bold uppercase tracking-wider text-old-ink">
-                          Amar Pathagar
-                        </h1>
-                        <p className="text-xs text-old-grey uppercase">Library</p>
-                      </div>
-                    </Link>
-                  ) : (
-                    <Link href="/dashboard" className="mx-auto">
-                      <span className="text-3xl">📚</span>
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-1 hover:bg-old-ink hover:text-old-paper transition-colors border-2 border-old-ink"
-                    title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {sidebarOpen ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                      )}
-                    </svg>
-                  </button>
+      <aside className={`
+        fixed lg:sticky top-0 left-0 h-screen z-50
+        bg-gradient-to-b from-old-paper via-white to-old-paper
+        border-r-4 border-old-ink 
+        shadow-[8px_0_16px_rgba(0,0,0,0.15)]
+        transition-all duration-300 ease-in-out
+        flex flex-col
+        ${sidebarOpen ? 'w-72' : 'w-20'}
+        ${isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}
+      `}>
+        {/* Logo Section */}
+        <div className={`
+          relative overflow-hidden
+          border-b-4 border-old-ink 
+          bg-gradient-to-br from-old-ink via-gray-800 to-old-ink
+          ${sidebarOpen ? 'p-6' : 'p-4'}
+        `}>
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px)'
+            }} />
+          </div>
+          
+          <div className="relative z-10 flex items-start justify-between">
+            {sidebarOpen ? (
+              <Link href="/dashboard" className="block flex-1" onClick={closeSidebarOnMobile}>
+                <div className="flex items-center gap-3">
+                  <div className="text-5xl filter drop-shadow-lg">📚</div>
+                  <div>
+                    <h1 className="text-2xl font-bold uppercase tracking-wider text-old-paper leading-tight">
+                      Amar Pathagar
+                    </h1>
+                    <p className="text-xs text-old-paper opacity-75 uppercase tracking-widest mt-1">
+                      Community Library
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
+            ) : (
+              <Link href="/dashboard" className="flex justify-center flex-1" onClick={closeSidebarOnMobile}>
+                <div className="text-5xl filter drop-shadow-lg">📚</div>
+              </Link>
+            )}
+            
+            {/* Toggle Button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 bg-old-paper text-old-ink
+                       border-2 border-old-paper
+                       hover:bg-white hover:border-white
+                       transition-all duration-200
+                       shadow-md hover:shadow-lg
+                       group flex-shrink-0"
+              title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {sidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
 
-              {/* User Info */}
-              {user && (
-                <div className="p-4 border-b-2 border-old-border bg-gradient-to-br from-white to-gray-50">
-                  {sidebarOpen ? (
-                    <button
-                      onClick={() => { router.push('/profile/edit'); closeSidebarOnMobile(); }}
-                      className="w-full text-left hover:opacity-75 transition-opacity"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 border-2 border-old-ink bg-old-paper flex items-center justify-center text-xl">
-                          👤
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm truncate">{user.full_name || user.username}</div>
-                          <div className="text-xs text-old-grey uppercase">Score: {user.success_score}</div>
-                        </div>
-                      </div>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => { router.push('/profile/edit'); closeSidebarOnMobile(); }}
-                      className="w-full flex justify-center"
-                      title={user.full_name || user.username}
-                    >
-                      <div className="w-10 h-10 border-2 border-old-ink bg-old-paper flex items-center justify-center text-xl">
-                        👤
-                      </div>
-                    </button>
-                  )}
+        {/* User Profile Card */}
+        {user && (
+          <div className={`
+            border-b-2 border-old-border
+            bg-gradient-to-br from-white to-gray-50
+            ${sidebarOpen ? 'p-4' : 'p-3'}
+          `}>
+            <button
+              onClick={() => { router.push('/profile/edit'); closeSidebarOnMobile(); }}
+              className={`
+                w-full text-left 
+                hover:bg-old-paper transition-all duration-200
+                border-2 border-transparent hover:border-old-ink
+                ${sidebarOpen ? 'p-3' : 'p-2'}
+                group
+              `}
+            >
+              {sidebarOpen ? (
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-12 h-12 border-3 border-old-ink bg-gradient-to-br from-old-paper to-amber-100 
+                                  flex items-center justify-center text-2xl
+                                  shadow-md group-hover:shadow-lg transition-shadow">
+                      👤
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full" 
+                         title="Online" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm truncate text-old-ink group-hover:text-black">
+                      {user.full_name || user.username}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-old-grey uppercase">Score:</span>
+                      <span className="text-xs font-bold text-old-ink">{user.success_score}</span>
+                      {user.role === 'admin' && (
+                        <span className="px-1.5 py-0.5 bg-old-ink text-old-paper text-xs font-bold uppercase">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <svg className="w-4 h-4 text-old-grey group-hover:text-old-ink transition-colors" 
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="w-12 h-12 border-3 border-old-ink bg-gradient-to-br from-old-paper to-amber-100 
+                                  flex items-center justify-center text-2xl
+                                  shadow-md group-hover:shadow-lg transition-shadow">
+                      👤
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
+                  </div>
                 </div>
               )}
+            </button>
+          </div>
+        )}
 
-              {/* Navigation */}
-              <nav className="flex-1 overflow-y-auto p-2">
-                <SidebarLink 
-                  href="/dashboard" 
-                  icon="🏠" 
-                  label="Dashboard" 
-                  active={isActive('/dashboard')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/books" 
-                  icon="📚" 
-                  label="Books" 
-                  active={isActive('/books')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/my-library" 
-                  icon="📖" 
-                  label="My Library" 
-                  active={isActive('/my-library')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/reading-history" 
-                  icon="📜" 
-                  label="History" 
-                  active={isActive('/reading-history')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/reviews" 
-                  icon="⭐" 
-                  label="Reviews" 
-                  active={isActive('/reviews')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/leaderboard" 
-                  icon="🏆" 
-                  label="Leaderboard" 
-                  active={isActive('/leaderboard')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                <SidebarLink 
-                  href="/donations" 
-                  icon="🎁" 
-                  label="Donations" 
-                  active={isActive('/donations')}
-                  collapsed={!sidebarOpen}
-                  onClick={closeSidebarOnMobile}
-                />
-                
-                {user?.role === 'admin' && (
-                  <>
-                    <div className={`my-2 border-t-2 border-old-border ${!sidebarOpen && 'mx-2'}`} />
-                    <SidebarLink 
-                      href="/admin" 
-                      icon="⚙️" 
-                      label="Admin" 
-                      active={isActive('/admin')}
-                      collapsed={!sidebarOpen}
-                      onClick={closeSidebarOnMobile}
-                    />
-                  </>
-                )}
-              </nav>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+          <SidebarLink 
+            href="/dashboard" 
+            icon="🏠" 
+            label="Dashboard" 
+            active={isActive('/dashboard')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/books" 
+            icon="📚" 
+            label="Books" 
+            active={isActive('/books')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/my-library" 
+            icon="📖" 
+            label="My Library" 
+            active={isActive('/my-library')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/reading-history" 
+            icon="📜" 
+            label="History" 
+            active={isActive('/reading-history')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/reviews" 
+            icon="⭐" 
+            label="Reviews" 
+            active={isActive('/reviews')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/leaderboard" 
+            icon="🏆" 
+            label="Leaderboard" 
+            active={isActive('/leaderboard')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          <SidebarLink 
+            href="/donations" 
+            icon="🎁" 
+            label="Donations" 
+            active={isActive('/donations')}
+            collapsed={!sidebarOpen}
+            onClick={closeSidebarOnMobile}
+          />
+          
+          {user?.role === 'admin' && (
+            <>
+              <div className={`my-3 border-t-2 border-old-border ${!sidebarOpen && 'mx-2'}`} />
+              <SidebarLink 
+                href="/admin" 
+                icon="⚙️" 
+                label="Admin Panel" 
+                active={isActive('/admin')}
+                collapsed={!sidebarOpen}
+                onClick={closeSidebarOnMobile}
+                isAdmin
+              />
+            </>
+          )}
+        </nav>
 
-              {/* Notifications & Logout */}
-              <div className="p-2 border-t-2 border-old-border bg-gradient-to-br from-white to-gray-50">
-                {sidebarOpen ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2">
-                      <NotificationBell />
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-3 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-xs
-                               hover:bg-old-ink hover:text-old-paper transition-colors flex items-center gap-2"
-                    >
-                      <span>🚪</span>
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-center">
-                      <NotificationBell />
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full p-2 border-2 border-old-ink text-old-ink hover:bg-old-ink hover:text-old-paper transition-colors flex justify-center"
-                      title="Logout"
-                    >
-                      <span className="text-xl">🚪</span>
-                    </button>
-                  </div>
-                )}
+        {/* Bottom Actions */}
+        <div className="border-t-4 border-old-ink bg-gradient-to-br from-white to-gray-50 p-3 space-y-2">
+          {sidebarOpen ? (
+            <>
+              <div className="px-2 py-2 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wider text-old-grey font-bold">Notifications</span>
+                <NotificationBell />
               </div>
-            </div>
-          </aside>
-        </>
-      )}
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-3 border-3 border-old-ink bg-white text-old-ink 
+                         font-bold uppercase text-xs tracking-wider
+                         hover:bg-old-ink hover:text-old-paper 
+                         transition-all duration-200
+                         shadow-md hover:shadow-lg
+                         flex items-center justify-center gap-2 group"
+              >
+                <span className="text-lg group-hover:scale-110 transition-transform">🚪</span>
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-center py-2">
+                <NotificationBell />
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full p-3 border-3 border-old-ink bg-white text-old-ink 
+                         hover:bg-old-ink hover:text-old-paper 
+                         transition-all duration-200
+                         shadow-md hover:shadow-lg
+                         flex justify-center group"
+                title="Logout"
+              >
+                <span className="text-xl group-hover:scale-110 transition-transform">🚪</span>
+              </button>
+            </>
+          )}
+        </div>
+      </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top Bar (Mobile) */}
-        {isAuthenticated && (
-          <header className="lg:hidden bg-white border-b-4 border-old-ink shadow-md sticky top-0 z-30">
-            <div className="px-4 py-3 flex items-center justify-between">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 border-2 border-old-ink text-old-ink hover:bg-old-ink hover:text-old-paper transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <span className="text-2xl">📚</span>
-                <h1 className="text-lg font-bold uppercase tracking-wider text-old-ink">
-                  Amar Pathagar
-                </h1>
-              </Link>
-              <div className="w-10" /> {/* Spacer for centering */}
-            </div>
-          </header>
-        )}
+        {/* Mobile Top Bar */}
+        <header className="lg:hidden bg-white border-b-4 border-old-ink shadow-md sticky top-0 z-30">
+          <div className="px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 border-3 border-old-ink text-old-ink 
+                       hover:bg-old-ink hover:text-old-paper 
+                       transition-all duration-200 shadow-md"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <span className="text-3xl">📚</span>
+              <h1 className="text-xl font-bold uppercase tracking-wider text-old-ink">
+                Amar Pathagar
+              </h1>
+            </Link>
+            <div className="w-10" />
+          </div>
+        </header>
 
         {/* Main Content */}
         <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 md:py-8 max-w-7xl mx-auto">
@@ -275,9 +349,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {/* Footer */}
         <footer className="bg-old-ink text-old-paper border-t-4 border-black mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {/* Main Footer Content */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
-              {/* Brand */}
               <div className="flex items-center gap-2">
                 <span className="text-2xl">📚</span>
                 <div className="text-left">
@@ -286,7 +358,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              {/* Philosophy - Inline */}
               <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-xs">
                 <span className="uppercase tracking-wider opacity-75 hover:opacity-100 transition-opacity">Trust-Based</span>
                 <span className="opacity-30">|</span>
@@ -295,7 +366,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <span className="uppercase tracking-wider opacity-75 hover:opacity-100 transition-opacity">Reputation Through Contribution</span>
               </div>
 
-              {/* Developer Credits */}
               <div className="text-xs text-center md:text-right">
                 <p className="opacity-75 mb-1">
                   by{' '}
@@ -322,7 +392,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Copyright */}
             <div className="text-center pt-4 border-t border-old-paper border-opacity-10">
               <p className="text-xs opacity-50">
                 © 2026 Amar Pathagar. A Trust-Based Reading Network.
@@ -341,7 +410,8 @@ function SidebarLink({
   label, 
   active, 
   collapsed,
-  onClick 
+  onClick,
+  isAdmin = false
 }: { 
   href: string
   icon: string
@@ -349,23 +419,33 @@ function SidebarLink({
   active: boolean
   collapsed: boolean
   onClick?: () => void
+  isAdmin?: boolean
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
       className={`
-        flex items-center gap-3 px-3 py-2 mb-1 font-bold uppercase text-xs tracking-wider transition-all
+        group relative flex items-center gap-3 
+        font-bold uppercase text-xs tracking-wider 
+        transition-all duration-200
+        ${collapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'}
         ${active 
-          ? 'bg-old-ink text-old-paper border-2 border-old-ink' 
-          : 'text-old-ink hover:bg-old-grey hover:text-old-paper border-2 border-transparent'
+          ? 'bg-old-ink text-old-paper shadow-lg border-l-4 border-old-paper' 
+          : `text-old-ink hover:bg-gradient-to-r ${isAdmin ? 'hover:from-red-50 hover:to-orange-50' : 'hover:from-old-paper hover:to-amber-50'} hover:border-l-4 hover:border-old-ink`
         }
-        ${collapsed ? 'justify-center' : ''}
       `}
       title={collapsed ? label : undefined}
     >
-      <span className="text-xl">{icon}</span>
-      {!collapsed && <span>{label}</span>}
+      <span className={`text-xl transition-transform group-hover:scale-110 ${active && 'scale-110'}`}>
+        {icon}
+      </span>
+      {!collapsed && (
+        <span className="flex-1">{label}</span>
+      )}
+      {!collapsed && active && (
+        <span className="text-old-paper">●</span>
+      )}
     </Link>
   )
 }
