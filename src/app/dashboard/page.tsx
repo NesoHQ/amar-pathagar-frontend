@@ -17,6 +17,8 @@ export default function DashboardPage() {
     booksReading: 0,
   })
   const [myRequests, setMyRequests] = useState<any[]>([])
+  const [myCurrentBooks, setMyCurrentBooks] = useState<any[]>([])
+  const [readingHistory, setReadingHistory] = useState<any[]>([])
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -28,6 +30,8 @@ export default function DashboardPage() {
     if (isAuthenticated) {
       loadStats()
       loadMyRequests()
+      loadMyCurrentBooks()
+      loadReadingHistory()
     }
   }, [isAuthenticated])
 
@@ -56,6 +60,30 @@ export default function DashboardPage() {
     }
   }
 
+  const loadMyCurrentBooks = async () => {
+    try {
+      const response = await booksAPI.getAll()
+      const books = response.data.data || []
+      // Filter books where current user is the holder
+      const myBooks = books.filter((b: any) => b.current_holder_id === user?.id)
+      setMyCurrentBooks(myBooks)
+    } catch (error) {
+      console.error('Failed to load current books:', error)
+      setMyCurrentBooks([])
+    }
+  }
+
+  const loadReadingHistory = async () => {
+    try {
+      const response = await booksAPI.getMyReadingHistory()
+      const historyData = response.data.data || response.data || []
+      setReadingHistory(Array.isArray(historyData) ? historyData.slice(0, 5) : [])
+    } catch (error) {
+      console.error('Failed to load reading history:', error)
+      setReadingHistory([])
+    }
+  }
+
   const handleCancelRequest = async (bookId: string, bookTitle: string) => {
     try {
       await booksAPI.cancelRequest(bookId)
@@ -63,6 +91,20 @@ export default function DashboardPage() {
       loadMyRequests()
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to cancel request')
+    }
+  }
+
+  const handleReturnBook = async (bookId: string, bookTitle: string) => {
+    if (!confirm(`Return "${bookTitle}"? This will make it available for others.`)) return
+    
+    try {
+      await booksAPI.returnBook(bookId)
+      success(`"${bookTitle}" returned successfully!`)
+      loadMyCurrentBooks()
+      loadStats()
+      loadReadingHistory()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to return book')
     }
   }
 
@@ -277,6 +319,103 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Currently Reading Books */}
+        {myCurrentBooks.length > 0 && (
+          <div className="border-4 border-blue-600 bg-white shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)]">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 border-b-4 border-blue-600 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📖</span>
+                <h2 className="text-lg md:text-xl font-bold uppercase tracking-wider">
+                  Currently Reading
+                </h2>
+              </div>
+              <span className="px-2 py-1 bg-white text-blue-600 text-xs font-bold">
+                {myCurrentBooks.length}
+              </span>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                {myCurrentBooks.map((book: any) => (
+                  <div 
+                    key={book.id} 
+                    className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white p-4 hover:border-blue-600 transition-all"
+                  >
+                    <div className="flex items-start gap-4">
+                      <span className="text-4xl">📖</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold uppercase text-lg mb-1 truncate">{book.title}</h3>
+                        <p className="text-sm text-old-grey mb-3">{book.author}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button 
+                            className="px-4 py-2 border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-600 hover:text-white 
+                                     font-bold uppercase text-xs tracking-wider transition-all"
+                            onClick={() => router.push(`/books/${book.id}`)}
+                          >
+                            View Details
+                          </button>
+                          <button 
+                            className="px-4 py-2 border-2 border-green-600 bg-green-600 text-white hover:bg-green-700 
+                                     font-bold uppercase text-xs tracking-wider transition-all"
+                            onClick={() => handleReturnBook(book.id, book.title)}
+                          >
+                            ✓ Return Book
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reading History */}
+        {readingHistory.length > 0 && (
+          <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+            <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-3 border-b-4 border-old-ink flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📚</span>
+                <h2 className="text-lg md:text-xl font-bold uppercase tracking-wider">
+                  Recent Reading History
+                </h2>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-2">
+                {readingHistory.map((history: any) => (
+                  <div 
+                    key={history.id} 
+                    className="flex items-center justify-between p-3 border-2 border-old-border hover:border-old-ink transition-all bg-gradient-to-r from-white to-gray-50"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-2xl">✓</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold uppercase text-sm truncate">
+                          {history.book?.title || 'Unknown Book'}
+                        </h3>
+                        <p className="text-xs text-old-grey">
+                          {history.end_date 
+                            ? `Completed ${new Date(history.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                            : `Started ${new Date(history.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      className="px-3 py-1 border-2 border-old-ink bg-white hover:bg-old-ink hover:text-old-paper 
+                               font-bold uppercase text-xs tracking-wider transition-all"
+                      onClick={() => router.push(`/books/${history.book_id}`)}
+                    >
+                      View
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick Navigation - More Visual */}
         <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
           <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink">
@@ -300,6 +439,18 @@ export default function DashboardPage() {
                 onClick={() => router.push('/my-library')}
               />
               <NavCard
+                icon="📜"
+                title="History"
+                description="Reading journey"
+                onClick={() => router.push('/reading-history')}
+              />
+              <NavCard
+                icon="⭐"
+                title="Reviews"
+                description="Rate & review"
+                onClick={() => router.push('/reviews')}
+              />
+              <NavCard
                 icon="🏆"
                 title="Leaderboard"
                 description="Top contributors"
@@ -310,6 +461,18 @@ export default function DashboardPage() {
                 title="Donate"
                 description="Support us"
                 onClick={() => router.push('/donations')}
+              />
+              <NavCard
+                icon="✏️"
+                title="Edit Profile"
+                description="Update info"
+                onClick={() => router.push('/profile/edit')}
+              />
+              <NavCard
+                icon="👤"
+                title="My Profile"
+                description="View public profile"
+                onClick={() => router.push(`/users/${user?.id}`)}
               />
             </div>
           </div>

@@ -48,6 +48,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <NavLink href="/dashboard" active={isActive('/dashboard')}>Dashboard</NavLink>
                 <NavLink href="/books" active={isActive('/books')}>Books</NavLink>
                 <NavLink href="/my-library" active={isActive('/my-library')}>My Library</NavLink>
+                <NavLink href="/reading-history" active={isActive('/reading-history')}>History</NavLink>
+                <NavLink href="/reviews" active={isActive('/reviews')}>Reviews</NavLink>
                 <NavLink href="/leaderboard" active={isActive('/leaderboard')}>Leaderboard</NavLink>
                 <NavLink href="/donations" active={isActive('/donations')}>Donations</NavLink>
                 {user?.role === 'admin' && (
@@ -60,12 +62,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {isAuthenticated && user && (
               <div className="hidden md:flex items-center space-x-4">
                 <NotificationBell />
-                <div className="text-right">
+                <button
+                  onClick={() => router.push('/profile/edit')}
+                  className="text-right hover:opacity-75 transition-opacity"
+                  title="Edit Profile"
+                >
                   <div className="font-bold text-old-ink text-sm">{user.full_name || user.username}</div>
                   <div className="text-xs text-old-grey uppercase">
                     Score: {user.success_score}
                   </div>
-                </div>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-xs
@@ -118,11 +124,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <MobileNavLink href="/my-library" active={isActive('/my-library')} onClick={() => setMobileMenuOpen(false)}>
                   My Library
                 </MobileNavLink>
+                <MobileNavLink href="/reading-history" active={isActive('/reading-history')} onClick={() => setMobileMenuOpen(false)}>
+                  Reading History
+                </MobileNavLink>
+                <MobileNavLink href="/reviews" active={isActive('/reviews')} onClick={() => setMobileMenuOpen(false)}>
+                  Reviews
+                </MobileNavLink>
                 <MobileNavLink href="/leaderboard" active={isActive('/leaderboard')} onClick={() => setMobileMenuOpen(false)}>
                   Leaderboard
                 </MobileNavLink>
                 <MobileNavLink href="/donations" active={isActive('/donations')} onClick={() => setMobileMenuOpen(false)}>
                   Donations
+                </MobileNavLink>
+                <MobileNavLink href="/profile/edit" active={isActive('/profile/edit')} onClick={() => setMobileMenuOpen(false)}>
+                  Edit Profile
                 </MobileNavLink>
                 {user?.role === 'admin' && (
                   <MobileNavLink href="/admin" active={isActive('/admin')} onClick={() => setMobileMenuOpen(false)}>
