@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { booksAPI } from '@/lib/api'
 
 export default function DashboardPage() {
   const router = useRouter()
   const { user, isAuthenticated, _hasHydrated } = useAuthStore()
+  const { success, error } = useToastStore()
   const [stats, setStats] = useState({
     totalBooks: 0,
     availableBooks: 0,
@@ -51,6 +53,16 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Failed to load requests:', error)
       setMyRequests([])
+    }
+  }
+
+  const handleCancelRequest = async (bookId: string, bookTitle: string) => {
+    try {
+      await booksAPI.cancelRequest(bookId)
+      success(`Request for "${bookTitle}" cancelled successfully!`)
+      loadMyRequests()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to cancel request')
     }
   }
 
@@ -154,8 +166,7 @@ export default function DashboardPage() {
               {myRequests.map((request: any) => (
                 <div 
                   key={request.id} 
-                  className="p-3 md:p-4 border-2 border-old-border hover:border-old-ink transition-colors cursor-pointer"
-                  onClick={() => router.push(`/books/${request.book_id}`)}
+                  className="p-3 md:p-4 border-2 border-old-border hover:border-old-ink transition-colors"
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
                     <div className="flex-1">
@@ -169,16 +180,20 @@ export default function DashboardPage() {
                         Requested: {new Date(request.requested_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center w-full sm:w-auto">
                       <span className="vintage-badge text-xs">{request.status}</span>
                       <button 
-                        className="classic-button-secondary text-xs px-3 py-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/books/${request.book_id}`)
-                        }}
+                        className="flex-1 sm:flex-none classic-button-secondary text-xs px-3 py-2"
+                        onClick={() => router.push(`/books/${request.book_id}`)}
                       >
                         View
+                      </button>
+                      <button 
+                        className="flex-1 sm:flex-none px-3 py-2 border-2 border-red-600 text-red-600 font-bold uppercase text-xs
+                                 hover:bg-red-600 hover:text-white transition-all"
+                        onClick={() => handleCancelRequest(request.book_id, request.book?.title || 'this book')}
+                      >
+                        Cancel
                       </button>
                     </div>
                   </div>

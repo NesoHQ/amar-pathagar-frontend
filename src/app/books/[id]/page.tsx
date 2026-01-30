@@ -72,6 +72,17 @@ export default function BookDetailPage() {
     }
   }
 
+  const handleCancelRequest = async () => {
+    try {
+      await booksAPI.cancelRequest(params.id as string)
+      success('Request cancelled successfully!')
+      setIsRequested(false)
+      loadBook()
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to cancel request')
+    }
+  }
+
   const handleSubmitIdea = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -157,11 +168,20 @@ export default function BookDetailPage() {
               {/* Actions */}
               <div className="space-y-2">
                 {isRequested ? (
-                  <div className="w-full p-4 border-4 border-green-600 bg-green-50 text-center">
-                    <p className="text-2xl font-bold uppercase text-green-700 tracking-wider">
-                      ✓ Requested
-                    </p>
-                    <p className="text-sm text-green-600 mt-1">You have already requested this book</p>
+                  <div className="space-y-2">
+                    <div className="w-full p-4 border-4 border-green-600 bg-green-50 text-center">
+                      <p className="text-2xl font-bold uppercase text-green-700 tracking-wider">
+                        ✓ Requested
+                      </p>
+                      <p className="text-sm text-green-600 mt-1">You have already requested this book</p>
+                    </div>
+                    <button 
+                      onClick={handleCancelRequest}
+                      className="w-full px-6 py-3 border-2 border-red-600 text-red-600 font-bold uppercase tracking-widest text-sm
+                               hover:bg-red-600 hover:text-white transition-all"
+                    >
+                      Cancel Request
+                    </button>
                   </div>
                 ) : book.status === 'available' ? (
                   <button onClick={handleRequest} className="w-full classic-button">
