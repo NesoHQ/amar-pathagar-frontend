@@ -10,6 +10,7 @@ export default function ReadingHistoryPage() {
   const router = useRouter()
   const { isAuthenticated, user, _hasHydrated } = useAuthStore()
   const [history, setHistory] = useState<any[]>([])
+  const [holdingBooks, setHoldingBooks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'completed' | 'reading'>('all')
 
@@ -18,6 +19,7 @@ export default function ReadingHistoryPage() {
       router.push('/login')
     } else if (isAuthenticated) {
       loadHistory()
+      loadHoldingBooks()
     }
   }, [isAuthenticated, _hasHydrated, router])
 
@@ -31,6 +33,17 @@ export default function ReadingHistoryPage() {
       setHistory([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadHoldingBooks = async () => {
+    try {
+      const response = await booksAPI.getMyBooksOnHold()
+      const booksData = response.data.data || response.data || []
+      setHoldingBooks(Array.isArray(booksData) ? booksData : [])
+    } catch (error) {
+      console.error('Failed to load holding books:', error)
+      setHoldingBooks([])
     }
   }
 
@@ -67,7 +80,7 @@ export default function ReadingHistoryPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="border-2 border-old-ink bg-white p-4 text-center">
                 <p className="text-3xl md:text-4xl font-bold">{history.length}</p>
                 <p className="text-xs uppercase text-old-grey mt-1">Total Books</p>
@@ -84,9 +97,65 @@ export default function ReadingHistoryPage() {
                 </p>
                 <p className="text-xs uppercase text-old-grey mt-1">Reading</p>
               </div>
+              <div className="border-2 border-old-ink bg-yellow-100 p-4 text-center">
+                <p className="text-3xl md:text-4xl font-bold">{holdingBooks.length}</p>
+                <p className="text-xs uppercase text-old-grey mt-1">Holding</p>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Currently Holding Section */}
+        {holdingBooks.length > 0 && (
+          <div className="border-4 border-yellow-600 bg-gradient-to-br from-yellow-50 to-amber-50 shadow-[6px_6px_0px_0px_rgba(202,138,4,0.3)]">
+            <div className="bg-gradient-to-r from-yellow-600 to-amber-600 text-white p-4 border-b-4 border-yellow-600 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📚</span>
+                <h2 className="text-xl font-bold uppercase tracking-wider">Currently Holding</h2>
+              </div>
+              <span className="px-3 py-1 bg-white text-yellow-600 text-xs font-bold rounded">
+                {holdingBooks.length}
+              </span>
+            </div>
+
+            <div className="p-4">
+              <p className="text-sm text-old-grey mb-4 uppercase tracking-wider">
+                Books you've completed and are holding until someone requests them
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {holdingBooks.map((book: any) => (
+                  <div
+                    key={book.id}
+                    className="border-2 border-yellow-600 bg-white p-4 transition-all cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(202,138,4,0.3)] hover:border-yellow-700"
+                    onClick={() => router.push(`/books/${book.id}`)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-3xl">📖</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold uppercase text-sm mb-1 truncate">
+                          {book.title}
+                        </h3>
+                        <p className="text-xs text-old-grey mb-2">
+                          {book.author}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-yellow-100 border border-yellow-600 text-yellow-700 text-xs font-bold uppercase">
+                            On Hold
+                          </span>
+                          {book.category && (
+                            <span className="text-xs text-old-grey">
+                              {book.category}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filter Tabs */}
         <div className="border-4 border-old-ink bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
