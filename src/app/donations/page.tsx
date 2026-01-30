@@ -4,19 +4,20 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
+import { useToastStore } from '@/store/toastStore'
 import { donationsAPI } from '@/lib/api'
 
 export default function DonationsPage() {
   const router = useRouter()
   const { isAuthenticated, _hasHydrated } = useAuthStore()
+  const { success, error } = useToastStore()
   const [donations, setDonations] = useState<any[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    donation_type: 'money',
+  const [loading, setLoading] = useState(true)
+  const [showDonateForm, setShowDonateForm] = useState(false)
+  const [donationType, setDonationType] = useState<'money' | 'book'>('money')
+  const [donationForm, setDonationForm] = useState({
     amount: '',
-    currency: 'USD',
     message: '',
-    is_public: true,
   })
 
   useEffect(() => {
@@ -30,33 +31,35 @@ export default function DonationsPage() {
   const loadDonations = async () => {
     try {
       const response = await donationsAPI.getAll()
-      const donationsData = response.data.data || response.data || []
-      setDonations(Array.isArray(donationsData) ? donationsData : [])
-    } catch (error) {
-      console.error('Failed to load donations:', error)
+      const data = response.data.data || response.data || []
+      setDonations(Array.isArray(data) ? data : [])
+    } catch (err: any) {
+      console.error('Failed to load donations:', err)
       setDonations([])
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitDonation = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await donationsAPI.create({
-        ...formData,
-        amount: formData.amount ? parseFloat(formData.amount) : undefined,
-      })
-      setShowForm(false)
-      setFormData({
-        donation_type: 'money',
-        amount: '',
-        currency: 'USD',
-        message: '',
+      const data: any = {
+        donation_type: donationType,
+        message: donationForm.message,
         is_public: true,
-      })
+      }
+      if (donationType === 'money') {
+        data.amount = parseFloat(donationForm.amount)
+        data.currency = 'USD'
+      }
+      await donationsAPI.create(data)
+      success('Thank you for your donation!')
+      setDonationForm({ amount: '', message: '' })
+      setShowDonateForm(false)
       loadDonations()
-      alert('Thank you for your donation! +10 points')
-    } catch (error) {
-      alert('Failed to process donation')
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Failed to process donation')
     }
   }
 
@@ -68,111 +71,183 @@ export default function DonationsPage() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="classic-card">
-          <div className="flex justify-between items-center">
+        <div className="border-4 border-old-ink bg-gradient-to-r from-green-600 to-teal-600 text-white p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center gap-3">
+            <span className="text-5xl">🎁</span>
             <div>
-              <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">🎁 Donations</h1>
-              <p className="text-old-grey">Support our community library</p>
+              <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wider">Donations</h1>
+              <p className="text-white opacity-90 text-sm uppercase tracking-wider">Support Our Community</p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="classic-button"
-            >
-              {showForm ? 'Cancel' : 'Make a Donation'}
-            </button>
           </div>
         </div>
 
-        {/* Donation Form */}
-        {showForm && (
-          <div className="classic-card">
-            <h2 className="text-2xl font-bold uppercase tracking-wider mb-4">Make a Donation</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold uppercase mb-2">Type</label>
-                <select
-                  value={formData.donation_type}
-                  onChange={(e) => setFormData({ ...formData, donation_type: e.target.value })}
-                  className="classic-input"
-                >
-                  <option value="money">Money</option>
-                  <option value="book">Book</option>
-                </select>
-              </div>
+        {/* Donate Section */}
+        <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-between">
+            <h2 className="text-xl font-bold uppercase tracking-wider">Make a Donation</h2>
+            <button
+              onClick={() => setShowDonateForm(!showDonateForm)}
+              className="px-4 py-2 border-2 border-old-paper hover:bg-old-paper hover:text-old-ink font-bold uppercase text-sm transition-all"
+            >
+              {showDonateForm ? 'Cancel' : '+ Donate'}
+            </button>
+          </div>
 
-              {formData.donation_type === 'money' && (
+          {showDonateForm && (
+            <div className="p-6">
+              <form onSubmit={handleSubmitDonation} className="space-y-6">
+                {/* Donation Type */}
                 <div>
-                  <label className="block text-sm font-bold uppercase mb-2">Amount</label>
-                  <input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="classic-input"
-                    placeholder="0.00"
-                    step="0.01"
+                  <label className="block text-sm font-bold uppercase mb-3">Donation Type</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setDonationType('money')}
+                      className={`p-6 border-4 transition-all ${
+                        donationType === 'money'
+                          ? 'border-green-600 bg-green-50'
+                          : 'border-old-border hover:border-old-ink'
+                      }`}
+                    >
+                      <div className="text-4xl mb-2">💰</div>
+                      <p className="font-bold uppercase">Money</p>
+                      <p className="text-xs text-old-grey mt-1">Financial Support</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDonationType('book')}
+                      className={`p-6 border-4 transition-all ${
+                        donationType === 'book'
+                          ? 'border-green-600 bg-green-50'
+                          : 'border-old-border hover:border-old-ink'
+                      }`}
+                    >
+                      <div className="text-4xl mb-2">📚</div>
+                      <p className="font-bold uppercase">Book</p>
+                      <p className="text-xs text-old-grey mt-1">Donate a Book</p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Amount (for money donations) */}
+                {donationType === 'money' && (
+                  <div>
+                    <label className="block text-sm font-bold uppercase mb-2">Amount (USD)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={donationForm.amount}
+                      onChange={(e) => setDonationForm({ ...donationForm, amount: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-old-border focus:border-old-ink outline-none text-lg"
+                      placeholder="10.00"
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Message */}
+                <div>
+                  <label className="block text-sm font-bold uppercase mb-2">Message (Optional)</label>
+                  <textarea
+                    value={donationForm.message}
+                    onChange={(e) => setDonationForm({ ...donationForm, message: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-old-border focus:border-old-ink outline-none"
+                    rows={3}
+                    placeholder="Share why you're donating..."
                   />
                 </div>
-              )}
 
-              <div>
-                <label className="block text-sm font-bold uppercase mb-2">Message (Optional)</label>
-                <textarea
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="classic-input"
-                  rows={3}
-                  placeholder="Share why you're donating..."
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.is_public}
-                  onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <label className="text-sm">Make this donation public</label>
-              </div>
-
-              <button type="submit" className="w-full classic-button">
-                Submit Donation
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Donations List */}
-        <div className="classic-card">
-          <h2 className="text-2xl font-bold uppercase tracking-wider mb-4">Recent Donations</h2>
-          {donations.length === 0 ? (
-            <p className="text-center text-old-grey py-8">No donations yet</p>
-          ) : (
-            <div className="space-y-3">
-              {donations.map((donation: any) => (
-                <div key={donation.id} className="p-4 border-2 border-old-border">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-bold uppercase">{donation.donor_name}</h3>
-                      <p className="text-sm text-old-grey">
-                        {donation.donation_type === 'money'
-                          ? `Donated ${donation.currency} ${donation.amount}`
-                          : `Donated a book: ${donation.book_title}`}
-                      </p>
-                    </div>
-                    <span className="text-sm text-old-grey">
-                      {new Date(donation.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {donation.message && (
-                    <p className="text-old-grey italic mt-2">"{donation.message}"</p>
-                  )}
-                </div>
-              ))}
+                <button
+                  type="submit"
+                  className="w-full px-6 py-4 border-2 border-green-600 bg-green-600 text-white hover:bg-white hover:text-green-600 font-bold uppercase text-lg transition-all"
+                >
+                  {donationType === 'money' ? '💰 Donate Money' : '📚 Donate Book'}
+                </button>
+              </form>
             </div>
           )}
         </div>
+
+        {/* Recent Donations */}
+        <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
+          <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink">
+            <h2 className="text-xl font-bold uppercase tracking-wider">Recent Donations</h2>
+          </div>
+
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-old-grey uppercase tracking-wider text-sm">Loading donations...</p>
+              </div>
+            ) : donations.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-old-grey uppercase tracking-wider text-sm">No donations yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {donations.map((donation: any) => (
+                  <DonationCard key={donation.id} donation={donation} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Info Box */}
+        <div className="border-4 border-old-ink bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+          <h3 className="font-bold uppercase tracking-wider mb-3 text-lg">💡 Why Donate?</h3>
+          <div className="space-y-2 text-sm text-old-grey">
+            <p>• Help maintain and grow our community library</p>
+            <p>• Enable more people to access books</p>
+            <p>• Support the trust-based reading network</p>
+            <p>• Earn +20 success score for book donations</p>
+            <p>• Earn +10 success score for money donations</p>
+            <p>• Get recognized as a community donor</p>
+          </div>
+        </div>
       </div>
     </Layout>
+  )
+}
+
+function DonationCard({ donation }: any) {
+  const getIcon = (type: string) => {
+    return type === 'money' ? '💰' : '📚'
+  }
+
+  const getTypeColor = (type: string) => {
+    return type === 'money' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+  }
+
+  return (
+    <div className="border-2 border-old-border p-4 hover:border-old-ink transition-all">
+      <div className="flex items-start gap-4">
+        <div className="text-4xl flex-shrink-0">{getIcon(donation.donation_type)}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`px-2 py-1 text-xs font-bold uppercase ${getTypeColor(donation.donation_type)}`}>
+              {donation.donation_type}
+            </span>
+            {donation.amount && (
+              <span className="font-bold text-lg">${donation.amount}</span>
+            )}
+          </div>
+          <p className="font-bold uppercase text-sm mb-1">
+            {donation.donor?.username || donation.donor?.full_name || 'Anonymous'}
+          </p>
+          {donation.message && (
+            <p className="text-sm text-old-grey italic">"{donation.message}"</p>
+          )}
+          <p className="text-xs text-old-grey mt-2">
+            {new Date(donation.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

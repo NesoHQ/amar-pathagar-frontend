@@ -11,6 +11,10 @@ interface User {
   success_score: number
   books_shared: number
   books_received: number
+  total_upvotes?: number
+  total_downvotes?: number
+  created_at?: string
+  updated_at?: string
 }
 
 interface AuthState {
