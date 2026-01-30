@@ -9,7 +9,8 @@ export default function UsersTab({ users, onAdjustScore, onUpdateRole }: UsersTa
   
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full border-2 border-old-border">
           <thead className="bg-old-ink text-old-paper">
             <tr>
@@ -57,6 +58,55 @@ export default function UsersTab({ users, onAdjustScore, onUpdateRole }: UsersTa
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {userList.map((user: any) => (
+          <div key={user.id} className="border-2 border-old-border p-4 bg-white hover:border-old-ink transition-all">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg truncate">{user.username}</h3>
+                <p className="text-sm text-old-grey truncate">{user.email}</p>
+              </div>
+              <span className={`px-2 py-1 text-xs font-bold uppercase flex-shrink-0 ml-2 ${
+                user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+              }`}>
+                {user.role}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-3 pb-3 border-b-2 border-old-border">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{user.success_score}</p>
+                <p className="text-xs text-old-grey uppercase">Score</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{user.books_shared}</p>
+                <p className="text-xs text-old-grey uppercase">Shared</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{user.books_received}</p>
+                <p className="text-xs text-old-grey uppercase">Received</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => onAdjustScore(user.id, user.username)}
+                className="flex-1 px-4 py-2 border-2 border-old-ink text-old-ink hover:bg-old-ink hover:text-old-paper font-bold uppercase text-xs transition-all"
+              >
+                ± Adjust Score
+              </button>
+              <button
+                onClick={() => onUpdateRole(user.id, user.username, user.role)}
+                className="flex-1 px-4 py-2 border-2 border-old-ink text-old-ink hover:bg-old-ink hover:text-old-paper font-bold uppercase text-xs transition-all"
+              >
+                ⚡ Toggle Role
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
