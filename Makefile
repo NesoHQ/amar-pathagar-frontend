@@ -27,7 +27,7 @@ dev: ## Start development server (local)
 
 .PHONY: dev-docker
 dev-docker: ## Start development server (Docker with hot reload)
-	docker-compose -f docker-compose.dev.yml up -d
+	docker compose -f docker-compose.dev.yml up -d
 	@echo "✅ Development server started"
 	@echo "📝 Frontend: http://localhost:3000"
 	@echo "📋 Logs: make logs"
@@ -39,11 +39,11 @@ install: ## Install dependencies
 
 .PHONY: logs
 logs: ## Follow application logs (Docker)
-	docker-compose -f docker-compose.dev.yml logs -f frontend
+	docker compose -f docker-compose.dev.yml logs -f frontend
 
 .PHONY: restart
 restart: ## Restart development server (Docker)
-	docker-compose -f docker-compose.dev.yml restart frontend
+	docker compose -f docker-compose.dev.yml restart frontend
 	@echo "✅ Frontend restarted"
 
 .PHONY: stop
