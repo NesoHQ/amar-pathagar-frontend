@@ -34,8 +34,10 @@ export default function ReviewsPage() {
     try {
       const response = await booksAPI.getAll()
       const books = response.data.data || []
-      // Get books user has returned (for review)
+      // Get books user currently has or has returned
+      // For now, we'll show books the user currently has
       const myBooks = books.filter((b: any) => b.current_holder_id === user?.id)
+      console.log('My current books:', myBooks)
       setMyCurrentBooks(myBooks)
     } catch (err) {
       console.error('Failed to load books:', err)
@@ -45,10 +47,17 @@ export default function ReviewsPage() {
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!reviewForm.reviewee_id || !reviewForm.book_id) {
+    if (!reviewForm.book_id) {
       error('Please select a book to review')
       return
     }
+
+    if (!reviewForm.reviewee_id) {
+      error('Unable to determine who to review for this book. The book may not have owner information.')
+      return
+    }
+
+    console.log('Submitting review:', reviewForm)
 
     try {
       await reviewsAPI.create(reviewForm)
@@ -111,10 +120,15 @@ export default function ReviewsPage() {
                   value={reviewForm.book_id}
                   onChange={(e) => {
                     const selectedBook = myCurrentBooks.find(b => b.id === e.target.value)
+                    console.log('Selected book:', selectedBook)
+                    // The reviewee should be the person who gave you the book
+                    // For now, use created_by or donated_by as fallback
+                    const revieweeId = selectedBook?.created_by || selectedBook?.donated_by || ''
+                    console.log('Reviewee ID:', revieweeId)
                     setReviewForm({
                       ...reviewForm,
                       book_id: e.target.value,
-                      reviewee_id: selectedBook?.created_by || ''
+                      reviewee_id: revieweeId
                     })
                   }}
                   className="w-full px-3 md:px-4 py-2 md:py-3 border-2 border-old-border focus:border-old-ink outline-none text-sm md:text-base"
@@ -127,8 +141,13 @@ export default function ReviewsPage() {
                     </option>
                   ))}
                 </select>
+                {myCurrentBooks.length === 0 && (
+                  <p className="text-xs text-red-600 mt-2">
+                    ⚠️ You don't have any books to review yet. Request a book first!
+                  </p>
+                )}
                 <p className="text-xs text-old-grey mt-2">
-                  💡 You can only review books you currently have or have returned
+                  💡 You can review books you currently have
                 </p>
               </div>
 

@@ -93,6 +93,7 @@ export const ideasAPI = {
 export const reviewsAPI = {
   create: (data: any) => api.post('/reviews', data),
   getByUser: (userId: string) => api.get(`/users/${userId}/reviews`),
+  getByBook: (bookId: string) => api.get(`/books/${bookId}/reviews`),
 }
 
 // Donations API
