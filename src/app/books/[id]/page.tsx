@@ -22,6 +22,8 @@ export default function BookDetailPage() {
   const [isRequested, setIsRequested] = useState(false)
   const [readingStatus, setReadingStatus] = useState<any>(null)
   const [handoverThread, setHandoverThread] = useState<any>(null)
+  const [isReviewsExpanded, setIsReviewsExpanded] = useState(true)
+  const [isDiscussionExpanded, setIsDiscussionExpanded] = useState(true)
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
     title: string
@@ -548,93 +550,114 @@ export default function BookDetailPage() {
         {/* Book Reviews Section */}
         {reviews.length > 0 && (
           <div className="border-4 border-purple-600 bg-white shadow-[6px_6px_0px_0px_rgba(147,51,234,0.3)]">
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 border-b-4 border-purple-600 flex items-center gap-2">
-              <span className="text-xl">⭐</span>
-              <h2 className="text-xl font-bold uppercase tracking-wider">Reader Reviews</h2>
-              <span className="px-2 py-0.5 bg-white text-purple-600 text-xs font-bold">
-                {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+            <button
+              onClick={() => setIsReviewsExpanded(!isReviewsExpanded)}
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white p-3 border-b-4 border-purple-600 flex items-center justify-between hover:from-purple-700 hover:to-purple-900 transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⭐</span>
+                <h2 className="text-lg font-bold uppercase tracking-wider">Reader Reviews</h2>
+                <span className="px-2 py-0.5 bg-white text-purple-600 text-xs font-bold">
+                  {reviews.length}
+                </span>
+              </div>
+              <span className="text-xl transition-transform duration-200" style={{ transform: isReviewsExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                ▼
               </span>
-            </div>
+            </button>
 
-            <div className="p-4 md:p-6 space-y-4">
-              {reviews.map((review) => {
-                const avgRating = [
-                  review.behavior_rating,
-                  review.book_condition_rating,
-                  review.communication_rating
-                ].filter(r => r != null).reduce((sum, r) => sum + r, 0) / 
-                [review.behavior_rating, review.book_condition_rating, review.communication_rating]
-                  .filter(r => r != null).length
+            {isReviewsExpanded && (
+              <div className="p-4 space-y-3">
+                {reviews.slice(0, 3).map((review) => {
+                  const ratings = [
+                    review.behavior_rating,
+                    review.book_condition_rating,
+                    review.communication_rating
+                  ].filter(r => r != null)
+                  const avgRating = ratings.length > 0 
+                    ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length 
+                    : 0
 
-                return (
-                  <div key={review.id} className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-white p-4">
-                    {/* Reviewer Info */}
-                    <div className="flex items-start gap-3 mb-3 pb-3 border-b border-purple-200">
-                      <div className="w-10 h-10 border-2 border-purple-600 bg-purple-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-lg">👤</span>
+                  return (
+                    <div key={review.id} className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-white p-3">
+                      {/* Compact Header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 border-2 border-purple-600 bg-purple-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm">👤</span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-xs">
+                              {review.reviewer?.full_name || review.reviewer?.username || 'Anonymous'}
+                            </p>
+                            <p className="text-xs text-old-grey">
+                              {new Date(review.created_at).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-purple-600">
+                            {avgRating.toFixed(1)}
+                          </div>
+                          <div className="text-xs">
+                            {'⭐'.repeat(Math.round(avgRating))}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-sm">
-                          {review.reviewer?.full_name || review.reviewer?.username || 'Anonymous'}
-                        </p>
-                        <p className="text-xs text-old-grey">
-                          {new Date(review.created_at).toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-purple-600">
-                          {avgRating.toFixed(1)}
-                        </div>
-                        <div className="text-xs text-old-grey">
-                          {'⭐'.repeat(Math.round(avgRating))}
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Rating Breakdown */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      {review.behavior_rating && (
-                        <div className="text-center p-2 bg-white border border-purple-200">
-                          <p className="text-xs text-old-grey uppercase mb-1">Behavior</p>
-                          <p className="text-lg font-bold text-purple-600">{review.behavior_rating}/5</p>
-                        </div>
-                      )}
-                      {review.book_condition_rating && (
-                        <div className="text-center p-2 bg-white border border-purple-200">
-                          <p className="text-xs text-old-grey uppercase mb-1">Condition</p>
-                          <p className="text-lg font-bold text-purple-600">{review.book_condition_rating}/5</p>
-                        </div>
-                      )}
-                      {review.communication_rating && (
-                        <div className="text-center p-2 bg-white border border-purple-200">
-                          <p className="text-xs text-old-grey uppercase mb-1">Communication</p>
-                          <p className="text-lg font-bold text-purple-600">{review.communication_rating}/5</p>
-                        </div>
-                      )}
-                    </div>
+                      {/* Compact Rating Pills */}
+                      <div className="flex gap-2 mb-2 flex-wrap">
+                        {review.behavior_rating && (
+                          <span className="px-2 py-1 bg-white border border-purple-200 text-xs">
+                            <span className="text-old-grey">Behavior:</span> <span className="font-bold text-purple-600">{review.behavior_rating}/5</span>
+                          </span>
+                        )}
+                        {review.book_condition_rating && (
+                          <span className="px-2 py-1 bg-white border border-purple-200 text-xs">
+                            <span className="text-old-grey">Condition:</span> <span className="font-bold text-purple-600">{review.book_condition_rating}/5</span>
+                          </span>
+                        )}
+                        {review.communication_rating && (
+                          <span className="px-2 py-1 bg-white border border-purple-200 text-xs">
+                            <span className="text-old-grey">Communication:</span> <span className="font-bold text-purple-600">{review.communication_rating}/5</span>
+                          </span>
+                        )}
+                      </div>
 
-                    {/* Comment */}
-                    {review.comment && (
-                      <div className="bg-white border border-purple-200 p-3">
-                        <p className="text-sm text-old-grey leading-relaxed">
+                      {/* Compact Comment */}
+                      {review.comment && (
+                        <p className="text-xs text-old-grey leading-relaxed line-clamp-2">
                           "{review.comment}"
                         </p>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+                {/* See More Button */}
+                {reviews.length > 3 && (
+                  <button
+                    className="w-full px-4 py-2 border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white 
+                             font-bold uppercase text-xs tracking-wider transition-all"
+                  >
+                    See All {reviews.length} Reviews →
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {/* Reading Ideas Section - Thread View */}
         <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
-          <div className="bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-between">
+          <button
+            onClick={() => setIsDiscussionExpanded(!isDiscussionExpanded)}
+            className="w-full bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-4 border-b-4 border-old-ink flex items-center justify-between hover:from-gray-800 hover:to-black transition-all"
+          >
             <div className="flex items-center gap-2">
               <span className="text-xl">💬</span>
               <h2 className="text-xl font-bold uppercase tracking-wider">Discussion Thread</h2>
@@ -642,22 +665,29 @@ export default function BookDetailPage() {
                 {ideas.length} {ideas.length === 1 ? 'Post' : 'Posts'}
               </span>
             </div>
-            <button
-              onClick={() => setShowIdeaForm(!showIdeaForm)}
-              className="px-4 py-2 border-2 border-old-paper text-old-paper font-bold uppercase text-xs
-                       hover:bg-old-paper hover:text-old-ink transition-all"
-            >
-              {showIdeaForm ? 'Cancel' : '+ New Post'}
-            </button>
-          </div>
+            <span className="text-xl transition-transform duration-200" style={{ transform: isDiscussionExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              ▼
+            </span>
+          </button>
 
-          <div className="p-4 md:p-6">
-            {showIdeaForm && (
-              <div className="mb-6 border-2 border-old-ink bg-old-paper p-4">
-                <div className="flex items-center gap-2 mb-3 pb-3 border-b-2 border-old-border">
-                  <span className="text-2xl">✍️</span>
-                  <p className="font-bold uppercase text-sm">New Discussion Post</p>
-                </div>
+          {isDiscussionExpanded && (
+            <div className="p-4 md:p-6">
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowIdeaForm(!showIdeaForm)}
+                  className="w-full px-4 py-2 border-2 border-old-ink text-old-ink font-bold uppercase text-xs
+                           hover:bg-old-ink hover:text-old-paper transition-all"
+                >
+                  {showIdeaForm ? 'Cancel' : '+ New Post'}
+                </button>
+              </div>
+
+              {showIdeaForm && (
+                <div className="mb-6 border-2 border-old-ink bg-old-paper p-4">
+                  <div className="flex items-center gap-2 mb-3 pb-3 border-b-2 border-old-border">
+                    <span className="text-2xl">✍️</span>
+                    <p className="font-bold uppercase text-sm">New Discussion Post</p>
+                  </div>
                 <form onSubmit={handleSubmitIdea} className="space-y-3">
                   <div>
                     <label className="block text-xs font-bold uppercase mb-1 text-old-grey">Subject</label>
@@ -796,7 +826,8 @@ export default function BookDetailPage() {
                 ))}
               </div>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
