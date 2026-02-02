@@ -51,15 +51,15 @@ export default function AdminPage() {
     onConfirm: () => {},
   });
 
-  // useEffect(() => {
-  //   if (_hasHydrated && !isAuthenticated) {
-  //     router.push("/login");
-  //   } else if (_hasHydrated && isAuthenticated && user?.role !== "admin") {
-  //     router.push("/dashboard");
-  //   } else if (_hasHydrated && isAuthenticated && user?.role === "admin") {
-  //     loadData();
-  //   }
-  // }, [isAuthenticated, user, _hasHydrated, router]);
+  useEffect(() => {
+    if (_hasHydrated && !isAuthenticated) {
+      router.push("/login");
+    } else if (_hasHydrated && isAuthenticated && user?.role !== "admin") {
+      router.push("/dashboard");
+    } else if (_hasHydrated && isAuthenticated && user?.role === "admin") {
+      loadData();
+    }
+  }, [isAuthenticated, user, _hasHydrated, router]);
 
   const loadData = async () => {
     try {
@@ -175,9 +175,9 @@ export default function AdminPage() {
     });
   };
 
-  // if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") {
-  //   return null;
-  // }
+  if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") {
+    return null;
+  }
 
   return (
     <Layout>

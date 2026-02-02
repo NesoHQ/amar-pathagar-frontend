@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { booksAPI, ideasAPI } from '@/lib/api'
+import { booksAPI, ideasAPI, reviewsAPI } from '@/lib/api'
 import { handoverAPI } from '@/lib/handoverApi'
 import ConfirmModal from '@/components/ConfirmModal'
 
@@ -16,6 +16,7 @@ export default function BookDetailPage() {
   const { success, error, warning } = useToastStore()
   const [book, setBook] = useState<any>(null)
   const [ideas, setIdeas] = useState<any[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
   const [showIdeaForm, setShowIdeaForm] = useState(false)
   const [ideaForm, setIdeaForm] = useState({ title: '', content: '' })
   const [isRequested, setIsRequested] = useState(false)
@@ -41,6 +42,7 @@ export default function BookDetailPage() {
     } else if (isAuthenticated && params.id) {
       loadBook()
       loadIdeas()
+      loadReviews()
       checkIfRequested()
       loadReadingStatus()
       loadHandoverThread()
@@ -133,6 +135,17 @@ export default function BookDetailPage() {
     } catch (error) {
       console.error('Failed to load ideas:', error)
       setIdeas([])
+    }
+  }
+
+  const loadReviews = async () => {
+    try {
+      const response = await reviewsAPI.getByBook(params.id as string)
+      const reviewsData = response.data.data || response.data || []
+      setReviews(Array.isArray(reviewsData) ? reviewsData : [])
+    } catch (error) {
+      console.error('Failed to load reviews:', error)
+      setReviews([])
     }
   }
 
@@ -528,6 +541,93 @@ export default function BookDetailPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Book Reviews Section */}
+        {reviews.length > 0 && (
+          <div className="border-4 border-purple-600 bg-white shadow-[6px_6px_0px_0px_rgba(147,51,234,0.3)]">
+            <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white p-4 border-b-4 border-purple-600 flex items-center gap-2">
+              <span className="text-xl">⭐</span>
+              <h2 className="text-xl font-bold uppercase tracking-wider">Reader Reviews</h2>
+              <span className="px-2 py-0.5 bg-white text-purple-600 text-xs font-bold">
+                {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+              </span>
+            </div>
+
+            <div className="p-4 md:p-6 space-y-4">
+              {reviews.map((review) => {
+                const avgRating = [
+                  review.behavior_rating,
+                  review.book_condition_rating,
+                  review.communication_rating
+                ].filter(r => r != null).reduce((sum, r) => sum + r, 0) / 
+                [review.behavior_rating, review.book_condition_rating, review.communication_rating]
+                  .filter(r => r != null).length
+
+                return (
+                  <div key={review.id} className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-white p-4">
+                    {/* Reviewer Info */}
+                    <div className="flex items-start gap-3 mb-3 pb-3 border-b border-purple-200">
+                      <div className="w-10 h-10 border-2 border-purple-600 bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">👤</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-sm">
+                          {review.reviewer?.full_name || review.reviewer?.username || 'Anonymous'}
+                        </p>
+                        <p className="text-xs text-old-grey">
+                          {new Date(review.created_at).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {avgRating.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-old-grey">
+                          {'⭐'.repeat(Math.round(avgRating))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Rating Breakdown */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {review.behavior_rating && (
+                        <div className="text-center p-2 bg-white border border-purple-200">
+                          <p className="text-xs text-old-grey uppercase mb-1">Behavior</p>
+                          <p className="text-lg font-bold text-purple-600">{review.behavior_rating}/5</p>
+                        </div>
+                      )}
+                      {review.book_condition_rating && (
+                        <div className="text-center p-2 bg-white border border-purple-200">
+                          <p className="text-xs text-old-grey uppercase mb-1">Condition</p>
+                          <p className="text-lg font-bold text-purple-600">{review.book_condition_rating}/5</p>
+                        </div>
+                      )}
+                      {review.communication_rating && (
+                        <div className="text-center p-2 bg-white border border-purple-200">
+                          <p className="text-xs text-old-grey uppercase mb-1">Communication</p>
+                          <p className="text-lg font-bold text-purple-600">{review.communication_rating}/5</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Comment */}
+                    {review.comment && (
+                      <div className="bg-white border border-purple-200 p-3">
+                        <p className="text-sm text-old-grey leading-relaxed">
+                          "{review.comment}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
