@@ -18,6 +18,10 @@ RUN npm ci
 FROM node:18-alpine AS builder
 WORKDIR /app
 
+# Build argument for API URL
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 
@@ -27,7 +31,7 @@ COPY . .
 # Create public directory if it doesn't exist
 RUN mkdir -p public
 
-# Build the application
+# Build the application with the provided API URL
 RUN npm run build
 
 # --------------------------------------------------
