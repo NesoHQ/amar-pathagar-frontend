@@ -14,6 +14,7 @@ import RequestsTab from "@/components/admin/RequestsTab";
 import UsersTab from "@/components/admin/UsersTab";
 import BooksTab from "@/components/admin/BooksTab";
 import ConfirmModal from "@/components/ConfirmModal";
+import BatchUploadModal from "@/components/admin/BatchUploadModal";
 
 type TabType = "overview" | "requests" | "users" | "books";
 
@@ -28,6 +29,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [books, setBooks] = useState<any[]>([]);
   const [showAddBook, setShowAddBook] = useState(false);
+  const [showBatchUpload, setShowBatchUpload] = useState(false);
   const [bookForm, setBookForm] = useState({
     title: "",
     author: "",
@@ -175,6 +177,18 @@ export default function AdminPage() {
     });
   };
 
+  const handleBatchUpload = async (books: any[]) => {
+    try {
+      await booksAPI.batchCreate(books);
+      success("Books uploaded successfully");
+      loadData();
+    } catch (err: any) {
+      console.error("Failed to batch upload:", err);
+      // Let the modal handle showing the specific error message
+      throw err;
+    }
+  };
+
   if (!_hasHydrated || !isAuthenticated || user?.role !== "admin") {
     return null;
   }
@@ -184,15 +198,19 @@ export default function AdminPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="border-4 border-old-ink bg-gradient-to-r from-old-ink to-gray-800 text-old-paper p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
-          <div className="flex items-center gap-3">
-            <span className="text-5xl">⚙️</span>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wider">
-                Admin Panel
-              </h1>
-              <p className="text-old-paper opacity-75 text-sm uppercase tracking-wider">
-                System Management & Control
-              </p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-5xl">⚙️</span>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold uppercase tracking-wider">
+                  Admin Panel
+                </h1>
+                <p className="text-old-paper opacity-75 text-sm uppercase tracking-wider">
+                  System Management & Control
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
             </div>
           </div>
         </div>
@@ -281,6 +299,7 @@ export default function AdminPage() {
                 bookForm={bookForm}
                 setBookForm={setBookForm}
                 onAddBook={handleAddBook}
+                onBatchUpload={() => setShowBatchUpload(true)}
               />
             )}
           </div>
@@ -295,6 +314,12 @@ export default function AdminPage() {
         message={confirmModal.message}
         confirmText={confirmModal.confirmText}
         confirmColor={confirmModal.confirmColor}
+      />
+
+      <BatchUploadModal
+        isOpen={showBatchUpload}
+        onClose={() => setShowBatchUpload(false)}
+        onUpload={handleBatchUpload}
       />
     </Layout>
   );

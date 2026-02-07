@@ -5,6 +5,7 @@ interface BooksTabProps {
   bookForm: any
   setBookForm: (form: any) => void
   onAddBook: (e: React.FormEvent) => void
+  onBatchUpload: () => void
 }
 
 export default function BooksTab({ 
@@ -13,7 +14,8 @@ export default function BooksTab({
   setShowAddBook, 
   bookForm, 
   setBookForm, 
-  onAddBook 
+  onAddBook,
+  onBatchUpload
 }: BooksTabProps) {
   const bookList = Array.isArray(books) ? books : []
   
@@ -21,12 +23,20 @@ export default function BooksTab({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="font-bold uppercase tracking-wider text-lg">Book Management</h3>
-        <button
-          onClick={() => setShowAddBook(!showAddBook)}
-          className="px-4 py-2 border-2 border-old-ink bg-old-ink text-old-paper hover:bg-white hover:text-old-ink font-bold uppercase text-sm transition-all"
-        >
-          {showAddBook ? 'Cancel' : '+ Add Book'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onBatchUpload}
+            className="px-4 py-2 border-2 border-old-ink bg-old-ink text-old-paper hover:bg-white hover:text-old-ink font-bold uppercase text-sm transition-all"
+          >
+            Batch Upload
+          </button>
+          <button
+            onClick={() => setShowAddBook(!showAddBook)}
+            className="px-4 py-2 border-2 border-old-ink bg-old-ink text-old-paper hover:bg-white hover:text-old-ink font-bold uppercase text-sm transition-all"
+          >
+            {showAddBook ? 'Cancel' : '+ Add Book'}
+          </button>
+        </div>
       </div>
 
       {showAddBook && (
