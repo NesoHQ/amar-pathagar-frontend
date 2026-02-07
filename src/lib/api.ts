@@ -61,6 +61,7 @@ export const booksAPI = {
     api.get('/books', { params }),
   getById: (id: string) => api.get(`/books/${id}`),
   create: (data: any) => api.post('/books', data),
+  batchCreate: (data: any[]) => api.post('/books/batch', data),
   update: (id: string, data: any) => api.patch(`/books/${id}`, data),
   delete: (id: string) => api.delete(`/books/${id}`),
   request: (id: string) => api.post(`/books/${id}/request`),
