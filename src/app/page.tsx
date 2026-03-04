@@ -7,7 +7,7 @@ import { Logo } from "@/components/layout/logo";
 
 export default function LandingPage() {
   const router = useRouter();
-  const { isAuthenticated, _hasHydrated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,13 +19,13 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'hsl(var(--background))' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Hero Section */}
       <section 
         className="border-b-4 bg-linear-to-br py-12 md:py-20 relative overflow-hidden"
         style={{
-          borderColor: 'hsl(var(--border))',
-          backgroundImage: 'linear-gradient(to bottom right, hsl(var(--accent)), hsl(var(--background)))'
+          borderColor: 'var(--border)',
+          backgroundImage: 'linear-gradient(to bottom right, var(--accent), var(--background))'
         }}
       >
         <div className="absolute top-0 right-0 text-9xl md:text-[20rem] opacity-5">
@@ -38,7 +38,7 @@ export default function LandingPage() {
             </div>
             <h2 
               className="text-4xl md:text-6xl font-bold uppercase tracking-wider mb-4 md:mb-6"
-              style={{ color: 'hsl(var(--foreground))' }}
+              style={{ color: 'var(--foreground)' }}
             >
               Share Books,
               <br />
@@ -46,7 +46,7 @@ export default function LandingPage() {
             </h2>
             <p 
               className="text-lg md:text-xl mb-6 md:mb-8 leading-relaxed"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
+              style={{ color: 'var(--muted-foreground)' }}
             >
               A community-driven library where books circulate based on trust
               and reputation. No late fees, no bureaucracy—just readers helping
@@ -59,9 +59,9 @@ export default function LandingPage() {
                   className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
                            transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
                   style={{
-                    borderColor: 'hsl(var(--border))',
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))'
+                    borderColor: 'var(--border)',
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)'
                   }}
                 >
                   📊 Go to Dashboard
@@ -73,9 +73,9 @@ export default function LandingPage() {
                     className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
                              transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
                     style={{
-                      borderColor: 'hsl(var(--border))',
-                      backgroundColor: 'hsl(var(--primary))',
-                      color: 'hsl(var(--primary-foreground))'
+                      borderColor: 'var(--border)',
+                      backgroundColor: 'var(--primary)',
+                      color: 'var(--primary-foreground)'
                     }}
                   >
                     Get Started Free
@@ -89,9 +89,9 @@ export default function LandingPage() {
                     className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
                              transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
                     style={{
-                      borderColor: 'hsl(var(--border))',
-                      backgroundColor: 'hsl(var(--card))',
-                      color: 'hsl(var(--foreground))'
+                      borderColor: 'var(--border)',
+                      backgroundColor: 'var(--card)',
+                      color: 'var(--foreground)'
                     }}
                   >
                     Learn More
@@ -107,8 +107,8 @@ export default function LandingPage() {
       <section 
         className="border-b-4 py-8 md:py-12"
         style={{
-          borderColor: 'hsl(var(--border))',
-          backgroundColor: 'hsl(var(--card))'
+          borderColor: 'var(--border)',
+          backgroundColor: 'var(--card)'
         }}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -124,14 +124,24 @@ export default function LandingPage() {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="border-b-4 border-old-ink bg-old-paper py-12 md:py-20"
+        className="border-b-4 py-12 md:py-20"
+        style={{
+          backgroundColor: 'var(--background)',
+          borderColor: 'var(--border)'
+        }}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3">
+            <h3 
+              className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3"
+              style={{ color: 'var(--foreground)' }}
+            >
               How It Works
             </h3>
-            <p className="text-old-grey text-base md:text-lg">
+            <p 
+              className="text-base md:text-lg"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
               Simple, trust-based book sharing
             </p>
           </div>
@@ -159,13 +169,25 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="border-b-4 border-old-ink bg-white py-12 md:py-20">
+      <section 
+        className="border-b-4 py-12 md:py-20"
+        style={{
+          backgroundColor: 'var(--card)',
+          borderColor: 'var(--border)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3">
+            <h3 
+              className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3"
+              style={{ color: 'var(--foreground)' }}
+            >
               Features
             </h3>
-            <p className="text-old-grey text-base md:text-lg">
+            <p 
+              className="text-base md:text-lg"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
               Everything you need for community reading
             </p>
           </div>
@@ -205,13 +227,25 @@ export default function LandingPage() {
       </section>
 
       {/* Principles */}
-      <section className="border-b-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 py-12 md:py-20">
+      <section 
+        className="border-b-4 py-12 md:py-20"
+        style={{
+          borderColor: 'var(--border)',
+          backgroundImage: 'linear-gradient(to bottom right, var(--accent), var(--muted))'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
-            <h3 className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3">
+            <h3 
+              className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-3"
+              style={{ color: 'var(--foreground)' }}
+            >
               Our Principles
             </h3>
-            <p className="text-old-grey text-base md:text-lg">
+            <p 
+              className="text-base md:text-lg"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
               What makes us different
             </p>
           </div>
@@ -239,28 +273,28 @@ export default function LandingPage() {
       <section 
         className="border-b-4 py-12 md:py-20"
         style={{
-          borderColor: 'hsl(var(--border))',
-          backgroundColor: 'hsl(var(--card))'
+          borderColor: 'var(--border)',
+          backgroundColor: 'var(--card)'
         }}
       >
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div 
             className="border-4 bg-linear-to-br p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)]"
             style={{
-              borderColor: 'hsl(var(--border))',
-              backgroundImage: 'linear-gradient(to bottom right, hsl(var(--accent)), hsl(var(--background)))'
+              borderColor: 'var(--border)',
+              backgroundImage: 'linear-gradient(to bottom right, var(--accent), var(--background))'
             }}
           >
             <span className="text-5xl md:text-6xl mb-4 block">📚</span>
             <h3 
               className="text-3xl md:text-4xl font-bold uppercase tracking-wider mb-4"
-              style={{ color: 'hsl(var(--foreground))' }}
+              style={{ color: 'var(--foreground)' }}
             >
               Ready to Start Reading?
             </h3>
             <p 
               className="text-base md:text-lg mb-6 md:mb-8"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
+              style={{ color: 'var(--muted-foreground)' }}
             >
               Join our community of book lovers. Share, discover, and read
               together.
@@ -271,9 +305,9 @@ export default function LandingPage() {
                 className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
                          transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
                 style={{
-                  borderColor: 'hsl(var(--border))',
-                  backgroundColor: 'hsl(var(--primary))',
-                  color: 'hsl(var(--primary-foreground))'
+                  borderColor: 'var(--border)',
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
                 }}
               >
                 📊 Go to Dashboard
@@ -284,9 +318,9 @@ export default function LandingPage() {
                 className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
                          transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
                 style={{
-                  borderColor: 'hsl(var(--border))',
-                  backgroundColor: 'hsl(var(--primary))',
-                  color: 'hsl(var(--primary-foreground))'
+                  borderColor: 'var(--border)',
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
                 }}
               >
                 Join Now - It's Free
@@ -300,8 +334,8 @@ export default function LandingPage() {
       <footer 
         className="py-8 md:py-12"
         style={{
-          backgroundColor: 'hsl(var(--primary))',
-          color: 'hsl(var(--primary-foreground))'
+          backgroundColor: 'var(--primary)',
+          color: 'var(--primary-foreground)'
         }}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -375,8 +409,8 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 border-2 bg-transparent font-bold uppercase text-xs
                          transition-all"
                 style={{
-                  borderColor: 'hsl(var(--primary-foreground))',
-                  color: 'hsl(var(--primary-foreground))'
+                  borderColor: 'var(--primary-foreground)',
+                  color: 'var(--primary-foreground)'
                 }}
               >
                 <span>⭐</span>
@@ -386,7 +420,7 @@ export default function LandingPage() {
           </div>
           <div 
             className="border-t-2 border-opacity-20 pt-6 text-center"
-            style={{ borderColor: 'hsl(var(--primary-foreground))' }}
+            style={{ borderColor: 'var(--primary-foreground)' }}
           >
             <p className="opacity-75 text-sm">
               © 2026 Amar Pathagar. A Trust-Based Reading Network by{" "}
@@ -416,10 +450,24 @@ function StatCard({
   label: string;
 }) {
   return (
-    <div className="border-4 border-old-ink bg-white p-4 md:p-6 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+    <div 
+      className="border-4 p-4 md:p-6 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--border)'
+      }}
+    >
       <div className="text-3xl md:text-4xl mb-2">{icon}</div>
-      <div className="text-2xl md:text-3xl font-bold mb-1">{number}</div>
-      <div className="text-xs md:text-sm text-old-grey uppercase tracking-wider">
+      <div 
+        className="text-2xl md:text-3xl font-bold mb-1"
+        style={{ color: 'var(--foreground)' }}
+      >
+        {number}
+      </div>
+      <div 
+        className="text-xs md:text-sm uppercase tracking-wider"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
         {label}
       </div>
     </div>
@@ -438,17 +486,38 @@ function StepCard({
   description: string;
 }) {
   return (
-    <div className="border-4 border-old-ink bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+    <div 
+      className="border-4 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--border)'
+      }}
+    >
       <div className="flex items-center gap-3 mb-4">
-        <div className="border-2 border-old-ink bg-old-ink text-old-paper w-10 h-10 flex items-center justify-center font-bold text-xl">
+        <div 
+          className="border-2 w-10 h-10 flex items-center justify-center font-bold text-xl"
+          style={{
+            backgroundColor: 'var(--primary)',
+            color: 'var(--primary-foreground)',
+            borderColor: 'var(--primary)'
+          }}
+        >
           {number}
         </div>
         <span className="text-4xl">{icon}</span>
       </div>
-      <h4 className="text-lg md:text-xl font-bold uppercase tracking-wider mb-2">
+      <h4 
+        className="text-lg md:text-xl font-bold uppercase tracking-wider mb-2"
+        style={{ color: 'var(--foreground)' }}
+      >
         {title}
       </h4>
-      <p className="text-sm text-old-grey leading-relaxed">{description}</p>
+      <p 
+        className="text-sm leading-relaxed"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
+        {description}
+      </p>
     </div>
   );
 }
@@ -463,12 +532,30 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="border-2 border-old-border bg-white p-4 md:p-5 hover:border-old-ink hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] transition-all">
+    <div 
+      className="border-2 p-4 md:p-5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] transition-all group"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--border)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--primary)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border)';
+      }}
+    >
       <div className="text-3xl md:text-4xl mb-3">{icon}</div>
-      <h4 className="text-base md:text-lg font-bold uppercase tracking-wider mb-2">
+      <h4 
+        className="text-base md:text-lg font-bold uppercase tracking-wider mb-2"
+        style={{ color: 'var(--foreground)' }}
+      >
         {title}
       </h4>
-      <p className="text-xs md:text-sm text-old-grey leading-relaxed">
+      <p 
+        className="text-xs md:text-sm leading-relaxed"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
         {description}
       </p>
     </div>
@@ -485,12 +572,26 @@ function PrincipleCard({
   description: string;
 }) {
   return (
-    <div className="border-4 border-old-ink bg-white p-6 md:p-8 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+    <div 
+      className="border-4 p-6 md:p-8 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
+      style={{
+        backgroundColor: 'var(--card)',
+        borderColor: 'var(--border)'
+      }}
+    >
       <div className="text-4xl md:text-5xl mb-4">{icon}</div>
-      <h4 className="text-lg md:text-xl font-bold uppercase tracking-wider mb-3">
+      <h4 
+        className="text-lg md:text-xl font-bold uppercase tracking-wider mb-3"
+        style={{ color: 'var(--foreground)' }}
+      >
         {title}
       </h4>
-      <p className="text-sm text-old-grey leading-relaxed">{description}</p>
+      <p 
+        className="text-sm leading-relaxed"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
+        {description}
+      </p>
     </div>
   );
 }
