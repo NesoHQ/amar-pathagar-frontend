@@ -46,23 +46,36 @@ export function ThemeSwitcher({ className = '' }: ThemeSwitcherProps) {
       aria-hidden={!isVisible}
     >
       <div 
-        className="flex flex-row gap-2 rounded-lg shadow-lg p-2 bg-card border border-border"
+        className="flex flex-row gap-2 rounded-lg shadow-lg p-2"
+        style={{
+          backgroundColor: 'var(--card)',
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: 'var(--border)'
+        }}
       >
         {themes.map(({ value, icon, label }) => (
           <button
             key={value}
             onClick={() => setTheme(value)}
-            className={`
-              flex items-center justify-center w-11 h-11 rounded-md
-              transition-all duration-200
-              hover:bg-accent hover:text-accent-foreground
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-              ${
-                theme === value
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'bg-background text-foreground'
+            className="flex items-center justify-center w-11 h-11 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style={{
+              backgroundColor: theme === value ? 'var(--primary)' : 'var(--background)',
+              color: theme === value ? 'var(--primary-foreground)' : 'var(--foreground)',
+              boxShadow: theme === value ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              if (theme !== value) {
+                e.currentTarget.style.backgroundColor = 'var(--accent)';
+                e.currentTarget.style.color = 'var(--accent-foreground)';
               }
-            `}
+            }}
+            onMouseLeave={(e) => {
+              if (theme !== value) {
+                e.currentTarget.style.backgroundColor = 'var(--background)';
+                e.currentTarget.style.color = 'var(--foreground)';
+              }
+            }}
             aria-label={`Switch to ${label} theme`}
             aria-pressed={theme === value}
             title={`${label} theme`}
