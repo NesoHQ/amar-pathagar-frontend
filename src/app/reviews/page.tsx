@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { reviewsAPI, booksAPI } from '@/lib/api'
@@ -81,7 +80,7 @@ export default function ReviewsPage() {
   }
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="border-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
@@ -263,6 +262,6 @@ export default function ReviewsPage() {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   )
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI, ideasAPI, reviewsAPI } from '@/lib/api'
@@ -218,7 +217,7 @@ export default function BookDetailPage() {
   }
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6">
         {/* Back Button */}
         <button
@@ -841,6 +840,6 @@ export default function BookDetailPage() {
         confirmText={confirmModal.confirmText}
         confirmColor={confirmModal.confirmColor}
       />
-    </Layout>
+    </div>
   )
 }

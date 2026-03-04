@@ -20,66 +20,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'hsl(var(--background))' }}>
-      {/* Navigation */}
-      <nav 
-        className="border-b-4 shadow-[0px_4px_0px_0px_rgba(0,0,0,0.3)]"
-        style={{ 
-          borderColor: 'hsl(var(--border))',
-          backgroundColor: 'hsl(var(--card))'
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Use Logo Component */}
-            <Logo size="nav" />
-            
-            <div className="flex gap-2 md:gap-3">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => router.push("/dashboard")}
-                  className="px-4 md:px-6 py-2 border-2 font-bold uppercase text-xs md:text-sm
-                           transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                  style={{
-                    borderColor: 'hsl(var(--border))',
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))'
-                  }}
-                >
-                  📊 Dashboard
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => router.push("/login")}
-                    className="px-4 md:px-6 py-2 border-2 font-bold uppercase text-xs md:text-sm
-                             transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                    style={{
-                      borderColor: 'hsl(var(--border))',
-                      backgroundColor: 'hsl(var(--card))',
-                      color: 'hsl(var(--foreground))'
-                    }}
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => router.push("/register")}
-                    className="px-4 md:px-6 py-2 border-2 font-bold uppercase text-xs md:text-sm
-                             transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                    style={{
-                      borderColor: 'hsl(var(--border))',
-                      backgroundColor: 'hsl(var(--primary))',
-                      color: 'hsl(var(--primary-foreground))'
-                    }}
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section 
         className="border-b-4 bg-linear-to-br py-12 md:py-20 relative overflow-hidden"

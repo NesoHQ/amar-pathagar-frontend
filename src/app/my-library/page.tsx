@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
@@ -88,7 +87,7 @@ export default function MyLibraryPage() {
   }
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6">
         {/* Header with Stats */}
         <div className="border-4 border-old-ink bg-gradient-to-br from-old-paper to-amber-50 p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] relative overflow-hidden">
@@ -293,6 +292,6 @@ export default function MyLibraryPage() {
         cancelText="Cancel"
         type="danger"
       />
-    </Layout>
+    </div>
   )
 }
