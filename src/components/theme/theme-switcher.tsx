@@ -45,7 +45,9 @@ export function ThemeSwitcher({ className = '' }: ThemeSwitcherProps) {
       } ${className}`}
       aria-hidden={!isVisible}
     >
-      <div className="flex flex-row gap-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-lg shadow-lg p-2">
+      <div 
+        className="flex flex-row gap-2 rounded-lg shadow-lg p-2 bg-card border border-border"
+      >
         {themes.map(({ value, icon, label }) => (
           <button
             key={value}
@@ -53,12 +55,12 @@ export function ThemeSwitcher({ className = '' }: ThemeSwitcherProps) {
             className={`
               flex items-center justify-center w-11 h-11 rounded-md
               transition-all duration-200
-              hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]
-              focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-2
+              hover:bg-accent hover:text-accent-foreground
+              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
               ${
                 theme === value
-                  ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-sm'
-                  : 'bg-[hsl(var(--background))] text-[hsl(var(--foreground))]'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-background text-foreground'
               }
             `}
             aria-label={`Switch to ${label} theme`}

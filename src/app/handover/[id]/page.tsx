@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { handoverAPI } from '@/lib/handoverApi'
@@ -86,17 +85,17 @@ export default function HandoverThreadDetailPage() {
 
   if (loading) {
     return (
-      <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div className="text-center py-12">
           <p className="text-old-grey uppercase tracking-wider">Loading...</p>
         </div>
-      </Layout>
+      </div>
     )
   }
 
   if (!thread) {
     return (
-      <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div className="text-center py-12">
           <p className="text-old-grey uppercase tracking-wider">Thread not found</p>
           <button
@@ -107,7 +106,7 @@ export default function HandoverThreadDetailPage() {
             Back to Handovers
           </button>
         </div>
-      </Layout>
+      </div>
     )
   }
 
@@ -117,7 +116,7 @@ export default function HandoverThreadDetailPage() {
   const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6">
         {/* Back Button */}
         <button
@@ -285,6 +284,6 @@ export default function HandoverThreadDetailPage() {
           )}
         </div>
       </div>
-    </Layout>
+    </div>
   )
 }

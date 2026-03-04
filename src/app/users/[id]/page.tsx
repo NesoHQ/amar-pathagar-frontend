@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { userAPI } from '@/lib/api'
 
@@ -39,21 +38,21 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div className="text-center py-12">
           <p className="text-old-grey uppercase tracking-wider">Loading profile...</p>
         </div>
-      </Layout>
+      </div>
     )
   }
 
   if (!user) {
     return (
-      <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         <div className="text-center py-12">
           <p className="text-old-grey uppercase tracking-wider">User not found</p>
         </div>
-      </Layout>
+      </div>
     )
   }
 
@@ -67,7 +66,7 @@ export default function UserProfilePage() {
   const scoreStatus = getScoreStatus(user.success_score)
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6">
         {/* Profile Header */}
         <div className="border-4 border-old-ink bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
@@ -148,7 +147,7 @@ export default function UserProfilePage() {
           )}
         </div>
       </div>
-    </Layout>
+    </div>
   )
 }
 

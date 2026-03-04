@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Layout from '@/components/Layout'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
 import { booksAPI, bookmarksAPI } from '@/lib/api'
@@ -67,7 +66,7 @@ export default function BooksPage() {
   }
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6">
         {/* Header - Compact */}
         <div className="border-4 border-old-ink bg-white p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
@@ -142,7 +141,7 @@ export default function BooksPage() {
           </div>
         )}
       </div>
-    </Layout>
+    </div>
   )
 }
 

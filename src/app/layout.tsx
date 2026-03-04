@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ThemeWrapper } from '@/components/theme/theme-wrapper'
+import { NavigationWrapper } from '@/components/layout/navigation-wrapper'
 
 export const metadata: Metadata = {
   title: 'Amar Pathagar - Community Library',
@@ -37,6 +38,7 @@ export default function RootLayout({
         </svg>
         
         <ThemeWrapper>
+          <NavigationWrapper />
           {children}
         </ThemeWrapper>
       </body>

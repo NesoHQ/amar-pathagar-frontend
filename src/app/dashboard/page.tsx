@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Layout from "@/components/Layout";
 import { useAuthStore } from "@/store/authStore";
 import { useToastStore } from "@/store/toastStore";
 import { booksAPI } from "@/lib/api";
@@ -168,7 +167,7 @@ export default function DashboardPage() {
   const scoreStatus = getScoreStatus(user.success_score);
 
   return (
-    <Layout>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
       <div className="space-y-6 md:space-y-8">
         {/* Compact Header with Score */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
@@ -663,7 +662,7 @@ export default function DashboardPage() {
         confirmText={confirmModal.confirmText}
         confirmColor={confirmModal.confirmColor}
       />
-    </Layout>
+    </div>
   );
 }
 
