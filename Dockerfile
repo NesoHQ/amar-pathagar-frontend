@@ -3,7 +3,7 @@
 # --------------------------------------------------
 # Dependencies Stage
 # --------------------------------------------------
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 WORKDIR /app
 
 # Copy package files
@@ -15,7 +15,7 @@ RUN npm ci
 # --------------------------------------------------
 # Builder Stage
 # --------------------------------------------------
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Build argument for API URL
@@ -37,7 +37,7 @@ RUN npm run build
 # --------------------------------------------------
 # Production Stage
 # --------------------------------------------------
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
