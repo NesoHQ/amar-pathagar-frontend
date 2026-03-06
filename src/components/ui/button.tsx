@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer",
   {
     variants: {
       variant: {
@@ -97,21 +97,28 @@ function Button({
       data-variant={variant}
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
-      style={getVariantStyles()}
+      style={{
+        ...getVariantStyles(),
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
       onMouseEnter={(e) => {
         const target = e.currentTarget as HTMLElement
         switch (variant) {
           case 'default':
             target.style.opacity = '0.9'
+            target.style.transform = 'translateY(-1px)'
             break
           case 'destructive':
             target.style.opacity = '0.9'
+            target.style.transform = 'translateY(-1px)'
             break
           case 'outline':
             target.style.backgroundColor = 'var(--accent)'
+            target.style.transform = 'translateY(-1px)'
             break
           case 'secondary':
             target.style.opacity = '0.8'
+            target.style.transform = 'translateY(-1px)'
             break
           case 'ghost':
             target.style.backgroundColor = 'var(--accent)'
@@ -123,15 +130,19 @@ function Button({
         switch (variant) {
           case 'default':
             target.style.opacity = '1'
+            target.style.transform = 'translateY(0)'
             break
           case 'destructive':
             target.style.opacity = '1'
+            target.style.transform = 'translateY(0)'
             break
           case 'outline':
             target.style.backgroundColor = 'var(--background)'
+            target.style.transform = 'translateY(0)'
             break
           case 'secondary':
             target.style.opacity = '1'
+            target.style.transform = 'translateY(0)'
             break
           case 'ghost':
             target.style.backgroundColor = 'transparent'

@@ -68,13 +68,14 @@ export function CardWrapper({
 
   return (
     <Card
-      className={`transition-all duration-200 overflow-hidden group py-0 ${hoverClasses} ${cursorClass} ${className}`}
+      className={`overflow-hidden group py-0 ${hoverClasses} ${cursorClass} ${className}`}
       onClick={onClick}
       style={{
         borderColor: 'var(--border)',
         borderWidth: borderWidth,
         borderStyle: 'solid',
         backgroundColor: 'var(--card)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       <CardContent className="p-0">
