@@ -5,7 +5,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/common/logo";
 import { HeroCarousel } from "@/components/home/hero.carousel";
+import { CategoriesCarousel } from "@/components/home/categories.carousel";
 import { HERO_SLIDES } from "@/constants/hero";
+import { MOCK_CATEGORIES } from "@/constants/categories";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -24,6 +26,9 @@ export default function LandingPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Hero Carousel Section */}
       <HeroCarousel slides={HERO_SLIDES} autoplay={false} autoplayDelay={5000} />
+
+      {/* Categories Carousel Section */}
+      <CategoriesCarousel categories={MOCK_CATEGORIES} />
 
       {/* Stats Section */}
       <section 
