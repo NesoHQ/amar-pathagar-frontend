@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/common/logo";
+import { HeroCarousel } from "@/components/home/hero.carousel";
+import { HERO_SLIDES } from "@/constants/hero";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -20,88 +22,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Hero Section */}
-      <section 
-        className="border-b-4 bg-linear-to-br py-12 md:py-20 relative overflow-hidden"
-        style={{
-          borderColor: 'var(--border)',
-          backgroundImage: 'linear-gradient(to bottom right, var(--accent), var(--background))'
-        }}
-      >
-        <div className="absolute top-0 right-0 text-9xl md:text-[20rem] opacity-5">
-          📖
-        </div>
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="mb-6">
-              <span className="text-6xl md:text-8xl">📚</span>
-            </div>
-            <h2 
-              className="text-4xl md:text-6xl font-bold uppercase tracking-wider mb-4 md:mb-6"
-              style={{ color: 'var(--foreground)' }}
-            >
-              Share Books,
-              <br />
-              Build Trust
-            </h2>
-            <p 
-              className="text-lg md:text-xl mb-6 md:mb-8 leading-relaxed"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              A community-driven library where books circulate based on trust
-              and reputation. No late fees, no bureaucracy—just readers helping
-              readers.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => router.push("/dashboard")}
-                  className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
-                           transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
-                  style={{
-                    borderColor: 'var(--border)',
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)'
-                  }}
-                >
-                  📊 Go to Dashboard
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => router.push("/register")}
-                    className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
-                             transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
-                    style={{
-                      borderColor: 'var(--border)',
-                      backgroundColor: 'var(--primary)',
-                      color: 'var(--primary-foreground)'
-                    }}
-                  >
-                    Get Started Free
-                  </button>
-                  <button
-                    onClick={() => {
-                      document
-                        .getElementById("how-it-works")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                    className="px-8 md:px-12 py-4 border-4 font-bold uppercase text-base md:text-lg
-                             transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]"
-                    style={{
-                      borderColor: 'var(--border)',
-                      backgroundColor: 'var(--card)',
-                      color: 'var(--foreground)'
-                    }}
-                  >
-                    Learn More
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Carousel Section */}
+      <HeroCarousel slides={HERO_SLIDES} autoplay={false} autoplayDelay={5000} />
 
       {/* Stats Section */}
       <section 
