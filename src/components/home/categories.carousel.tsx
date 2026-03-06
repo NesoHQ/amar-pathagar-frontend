@@ -3,15 +3,19 @@
 import { CarouselWrapper } from '@/components/ui/carousel.wrapper';
 import { CategoryCard } from '@/components/home/category.card';
 import { Category } from '@/types/category';
+import { useInView } from '@/hooks/useInView';
 
 export interface CategoriesCarouselProps {
   categories: Category[];
 }
 
 export function CategoriesCarousel({ categories }: CategoriesCarouselProps) {
+  const { ref, isInView } = useInView({ threshold: 0.1 });
+
   return (
     <section
-      className="py-8 md:py-12 border-b-4"
+      ref={ref as React.RefObject<HTMLElement>}
+      className={`py-8 md:py-12 border-b-4 fade-in-view ${isInView ? 'in-view' : ''}`}
       style={{
         backgroundColor: 'var(--background)',
         borderColor: 'var(--border)',

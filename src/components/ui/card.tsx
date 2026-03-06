@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+function Card({ className, style, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card"
@@ -10,6 +10,10 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
         "flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
         className
       )}
+      style={{
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        ...style,
+      }}
       {...props}
     />
   )
