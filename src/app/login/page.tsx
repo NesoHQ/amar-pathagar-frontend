@@ -30,7 +30,16 @@ export default function LoginPage() {
       const { user, access_token } = data;
       setAuth(user, access_token);
       success("Login successful! Welcome back.");
-      router.push("/dashboard");
+      
+      // Check for redirect parameter
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get('redirect');
+      
+      if (redirect && redirect.startsWith('/')) {
+        router.push(redirect);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       showError(
         err.response?.data?.error ||
