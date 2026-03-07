@@ -34,14 +34,6 @@ export function Logo({ size = 'nav', className = '', variant = 'default' }: Logo
       className={`flex items-center gap-2 group ${className}`}
       aria-label="Amar Pathagar - Home"
     >
-      {/* Book Icon */}
-      <span 
-        className={`${config.fontSize} transition-transform group-hover:scale-110`}
-        role="img" 
-        aria-label="Book icon"
-      >
-        📚
-      </span>
       
       {/* Logo Text */}
       <div className="flex flex-col">
