@@ -38,29 +38,30 @@ export function Navigation() {
 
   return (
     <nav 
-      className="sticky top-0 z-40 border-b"
+      className="sticky top-0 z-40 border-b glass"
       style={{ 
-        backgroundColor: 'var(--card)',
         borderColor: 'var(--border)'
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-14 md:h-16 gap-2 md:gap-4">
           {/* Left side: Hamburger (mobile) + Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
             {/* Mobile: Hamburger BEFORE logo */}
-            <div className="md:hidden">
+            <div className="md:hidden shrink-0">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="p-2 rounded-lg transition-colors hover:opacity-70 cursor-pointer"
+                className="p-1.5 md:p-2 rounded-lg transition-colors hover:opacity-70 cursor-pointer"
                 style={{ color: 'var(--foreground)' }}
                 aria-label="Open menu"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
             
-            <Logo size="nav" />
+            <div className="min-w-0">
+              <Logo size="nav" />
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -74,7 +75,7 @@ export function Navigation() {
           />
 
           {/* Mobile: User Menu on right */}
-          <div className="md:hidden">
+          <div className="md:hidden shrink-0">
             {isAuthenticated && user ? (
               <UserMenu 
                 user={user} 
@@ -85,7 +86,7 @@ export function Navigation() {
               <AuthButtons
                 onLogin={() => handleNavigation('/login')}
                 onSignUp={() => handleNavigation('/register')}
-                variant="mobile"
+                variant="desktop"
               />
             )}
           </div>

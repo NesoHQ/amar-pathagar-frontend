@@ -28,7 +28,7 @@ export function BooksSection({
 
   const handleViewAll = () => {
     if (categorySlug) {
-      router.push(`/books?category=${categorySlug}`);
+      router.push(`/books/category/${categorySlug}`);
     } else {
       router.push('/books');
     }

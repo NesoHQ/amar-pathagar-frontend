@@ -44,7 +44,7 @@ export function UserMenu({ user, onLogout, variant = 'desktop', onNavigate }: Us
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button 
-            className="flex items-center justify-center p-1.5 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-[var(--border)]"
+            className="flex items-center justify-center p-1 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-(--border)"
             style={{ 
               backgroundColor: 'transparent',
               color: 'var(--foreground)'
@@ -56,9 +56,9 @@ export function UserMenu({ user, onLogout, variant = 'desktop', onNavigate }: Us
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-7 h-7 md:w-8 md:h-8">
               <AvatarFallback 
-                className="text-sm font-bold"
+                className="text-xs md:text-sm font-bold"
                 style={{
                   backgroundColor: 'var(--primary)',
                   color: 'var(--primary-foreground)'
@@ -123,7 +123,7 @@ export function UserMenu({ user, onLogout, variant = 'desktop', onNavigate }: Us
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button 
-            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-[var(--border)]"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 cursor-pointer border border-transparent hover:border-(--border)"
             style={{ 
               backgroundColor: 'transparent',
               color: 'var(--foreground)'
@@ -260,7 +260,7 @@ export function UserMenu({ user, onLogout, variant = 'desktop', onNavigate }: Us
                 e.currentTarget.style.borderColor = 'transparent';
               }}
             >
-              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }} />
+              <Icon className="h-4 w-4 shrink-0" style={{ color: 'var(--muted-foreground)' }} />
               <span className="font-medium text-sm">{item.label}</span>
             </button>
           );
@@ -297,7 +297,7 @@ export function UserMenu({ user, onLogout, variant = 'desktop', onNavigate }: Us
             if (icon) (icon as SVGElement).style.color = 'var(--destructive)';
           }}
         >
-          <LogOut className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--destructive)' }} />
+          <LogOut className="h-4 w-4 shrink-0" style={{ color: 'var(--destructive)' }} />
           <span className="font-semibold text-sm">Logout</span>
         </button>
       </div>
