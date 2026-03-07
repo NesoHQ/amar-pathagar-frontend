@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { donationsAPI } from '@/lib/api'
+import { donationsService } from '@/services'
 
 export default function DonationsPage() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function DonationsPage() {
 
   const loadDonations = async () => {
     try {
-      const response = await donationsAPI.getAll()
+      const response = await donationsService.getAll()
       const data = response.data.data || response.data || []
       setDonations(Array.isArray(data) ? data : [])
     } catch (err: any) {
@@ -52,7 +52,7 @@ export default function DonationsPage() {
         data.amount = parseFloat(donationForm.amount)
         data.currency = 'USD'
       }
-      await donationsAPI.create(data)
+      await donationsService.create(data)
       success('Thank you for your donation!')
       setDonationForm({ amount: '', message: '' })
       setShowDonateForm(false)

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Modal from '@/components/modal'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { bookmarksAPI } from '@/lib/api'
+import { bookmarksService } from '@/services'
 
 export default function MyLibraryPage() {
   const router = useRouter()
@@ -30,7 +30,7 @@ export default function MyLibraryPage() {
 
   const loadBookmarks = async () => {
     try {
-      const response = await bookmarksAPI.getAll()
+      const response = await bookmarksService.getAll()
       const bookmarksData = response.data.data || response.data || []
       setBookmarks(Array.isArray(bookmarksData) ? bookmarksData : [])
     } catch (err) {
@@ -52,7 +52,7 @@ export default function MyLibraryPage() {
     closeDeleteModal()
     
     try {
-      await bookmarksAPI.delete(bookId, bookmarkType)
+      await bookmarksService.delete(bookId, bookmarkType)
       success('Bookmark removed successfully!')
       loadBookmarks()
     } catch (err: any) {

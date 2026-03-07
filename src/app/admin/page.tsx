@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useToastStore } from "@/store/toastStore";
-import { booksAPI } from "@/lib/api";
-import { adminAPI } from "@/lib/adminApi";
+import { booksService, adminService } from "@/services";
 import StatCard from "@/components/admin/stat.card";
 import TabButton from "@/components/admin/tab.button";
 import OverviewTab from "@/components/admin/overview.tab";
@@ -63,10 +62,10 @@ export default function AdminPage() {
   const loadData = async () => {
     try {
       const [statsRes, requestsRes, usersRes, booksRes] = await Promise.all([
-        adminAPI.getStats(),
-        adminAPI.getPendingRequests(),
-        adminAPI.getAllUsers(),
-        adminAPI.getAllBooks(),
+        adminService.getStats(),
+        adminService.getPendingRequests(),
+        adminService.getAllUsers(),
+        adminService.getAllBooks(),
       ]);
       setStats(statsRes.data.data || statsRes.data);
 
@@ -87,7 +86,7 @@ export default function AdminPage() {
   const handleAddBook = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await booksAPI.create(bookForm);
+      await booksService.create(bookForm);
       setBookForm({
         title: "",
         author: "",
@@ -109,7 +108,7 @@ export default function AdminPage() {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
     try {
-      await adminAPI.approveRequest(requestId, dueDate.toISOString());
+      await adminService.approveRequest(requestId, dueDate.toISOString());
       success("Request approved successfully!");
       setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
     } catch (err: any) {
@@ -121,7 +120,7 @@ export default function AdminPage() {
     const reason = prompt("Enter rejection reason:");
     if (!reason) return;
     try {
-      await adminAPI.rejectRequest(requestId, reason);
+      await adminService.rejectRequest(requestId, reason);
       success("Request rejected");
       setPendingRequests((prev) => prev.filter((req) => req.id !== requestId));
     } catch (err: any) {
@@ -142,7 +141,7 @@ export default function AdminPage() {
     const reason = prompt("Enter reason for adjustment:");
     if (!reason) return;
     try {
-      await adminAPI.adjustSuccessScore(userId, amount, reason);
+      await adminService.adjustSuccessScore(userId, amount, reason);
       success("Success score adjusted");
       loadData();
     } catch (err: any) {
@@ -164,7 +163,7 @@ export default function AdminPage() {
       confirmColor: "blue",
       onConfirm: async () => {
         try {
-          await adminAPI.updateUserRole(userId, newRole);
+          await adminService.updateUserRole(userId, newRole);
           success("User role updated");
           loadData();
         } catch (err: any) {

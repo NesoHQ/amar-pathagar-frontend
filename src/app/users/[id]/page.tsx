@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { userAPI } from '@/lib/api'
+import { userService } from '@/services'
 
 export default function UserProfilePage() {
   const router = useRouter()
@@ -23,7 +23,7 @@ export default function UserProfilePage() {
 
   const loadUserProfile = async () => {
     try {
-      const response = await userAPI.getProfile(userId)
+      const response = await userService.getProfile(userId)
       setUser(response.data.data || response.data)
     } catch (err: any) {
       console.error('Failed to load user profile:', err)

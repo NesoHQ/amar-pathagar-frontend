@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useToastStore } from "@/store/toastStore";
-import { booksAPI } from "@/lib/api";
-import { handoverAPI } from "@/lib/handoverApi";
+import { booksService, handoverService } from "@/services";
 import ConfirmModal from "@/components/confirm.modal";
 
 export default function DashboardPage() {
@@ -53,7 +52,7 @@ export default function DashboardPage() {
 
   const loadStats = async () => {
     try {
-      const response = await booksAPI.getAll();
+      const response = await booksService.getAll();
       const books = response.data.data || [];
       setStats({
         totalBooks: books.length,
@@ -68,7 +67,7 @@ export default function DashboardPage() {
 
   const loadMyRequests = async () => {
     try {
-      const response = await booksAPI.getMyRequests();
+      const response = await booksService.getMyRequests();
       const requestsData = response.data.data || response.data || [];
       setMyRequests(Array.isArray(requestsData) ? requestsData : []);
     } catch (error) {
@@ -79,7 +78,7 @@ export default function DashboardPage() {
 
   const loadMyCurrentBooks = async () => {
     try {
-      const response = await booksAPI.getAll();
+      const response = await booksService.getAll();
       const books = response.data.data || [];
       // Filter books where current user is the holder
       const myBooks = books.filter(
@@ -94,7 +93,7 @@ export default function DashboardPage() {
 
   const loadReadingHistory = async () => {
     try {
-      const response = await booksAPI.getMyReadingHistory();
+      const response = await booksService.getMyReadingHistory();
       const historyData = response.data.data || response.data || [];
       setReadingHistory(
         Array.isArray(historyData) ? historyData.slice(0, 5) : [],
@@ -107,7 +106,7 @@ export default function DashboardPage() {
 
   const loadHandoverThreads = async () => {
     try {
-      const response = await handoverAPI.getUserHandoverThreads();
+      const response = await handoverService.getUserHandoverThreads();
       const threadsData = response.data.data || response.data || [];
       // Filter to only show active threads
       const activeThreads = Array.isArray(threadsData)
@@ -122,7 +121,7 @@ export default function DashboardPage() {
 
   const handleCancelRequest = async (bookId: string, bookTitle: string) => {
     try {
-      await booksAPI.cancelRequest(bookId);
+      await booksService.cancelRequest(bookId);
       success(`Request for "${bookTitle}" cancelled successfully!`);
       loadMyRequests();
     } catch (err: any) {
@@ -139,7 +138,7 @@ export default function DashboardPage() {
       confirmColor: "green",
       onConfirm: async () => {
         try {
-          await booksAPI.returnBook(bookId);
+          await booksService.returnBook(bookId);
           success(`"${bookTitle}" returned successfully!`);
           loadMyCurrentBooks();
           loadStats();

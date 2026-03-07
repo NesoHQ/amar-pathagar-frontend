@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { handoverAPI } from '@/lib/handoverApi'
+import { handoverService } from '@/services'
 
 export default function HandoverThreadsPage() {
   const router = useRouter()
@@ -22,7 +22,7 @@ export default function HandoverThreadsPage() {
 
   const loadThreads = async () => {
     try {
-      const response = await handoverAPI.getUserHandoverThreads()
+      const response = await handoverService.getUserHandoverThreads()
       const threadsData = response.data.data || response.data || []
       // Filter to only show active threads
       const activeThreads = Array.isArray(threadsData) ? threadsData.filter((t: any) => t.status === 'active') : []

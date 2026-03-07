@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { authAPI } from "@/lib/api";
+import { authService } from "@/services";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await authAPI.register(formData);
+      await authService.register(formData);
       router.push("/login?registered=true");
     } catch (err: any) {
       setError(err.response?.data?.error || "Registration failed");

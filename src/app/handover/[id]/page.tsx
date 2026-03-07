@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { handoverAPI } from '@/lib/handoverApi'
+import { handoverService } from '@/services'
 
 export default function HandoverThreadDetailPage() {
   const params = useParams()
@@ -40,7 +40,7 @@ export default function HandoverThreadDetailPage() {
 
   const loadThread = async () => {
     try {
-      const response = await handoverAPI.getUserHandoverThreads()
+      const response = await handoverService.getUserHandoverThreads()
       const threadsData = response.data.data || response.data || []
       const threads = Array.isArray(threadsData) ? threadsData : []
       const foundThread = threads.find((t: any) => t.id === params.id)
@@ -54,7 +54,7 @@ export default function HandoverThreadDetailPage() {
 
   const loadMessages = async () => {
     try {
-      const response = await handoverAPI.getHandoverMessages(params.id as string)
+      const response = await handoverService.getHandoverMessages(params.id as string)
       const messagesData = response.data.data || response.data || []
       setMessages(Array.isArray(messagesData) ? messagesData : [])
     } catch (err) {
@@ -68,7 +68,7 @@ export default function HandoverThreadDetailPage() {
 
     setSending(true)
     try {
-      await handoverAPI.postHandoverMessage(params.id as string, newMessage.trim())
+      await handoverService.postHandoverMessage(params.id as string, newMessage.trim())
       setNewMessage('')
       loadMessages()
       success('Message sent!')

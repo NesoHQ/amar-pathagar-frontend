@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { notificationAPI } from '@/lib/notificationApi'
+import { notificationService } from '@/services'
 import { useAuthStore } from '@/store/authStore'
 
 export default function NotificationBell() {
@@ -26,7 +26,7 @@ export default function NotificationBell() {
 
   const loadNotifications = async () => {
     try {
-      const response = await notificationAPI.getAll()
+      const response = await notificationService.getAll()
       const data = response.data.data || response.data || []
       const notifList = Array.isArray(data) ? data : []
       setNotifications(notifList)
@@ -38,7 +38,7 @@ export default function NotificationBell() {
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      await notificationAPI.markAsRead(id)
+      await notificationService.markAsRead(id)
       loadNotifications()
     } catch (err) {
       console.error('Failed to mark as read:', err)
@@ -47,7 +47,7 @@ export default function NotificationBell() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      await notificationAPI.markAllAsRead()
+      await notificationService.markAllAsRead()
       loadNotifications()
     } catch (err) {
       console.error('Failed to mark all as read:', err)

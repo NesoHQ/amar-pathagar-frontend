@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { booksAPI, ideasAPI, reviewsAPI } from '@/lib/api'
-import { handoverAPI } from '@/lib/handoverApi'
+import { booksService, ideasService, reviewsService, handoverService } from '@/services'
 import ConfirmModal from '@/components/confirm.modal'
 
 export default function BookDetailPage() {
@@ -52,7 +51,7 @@ export default function BookDetailPage() {
 
   const loadBook = async () => {
     try {
-      const response = await booksAPI.getById(params.id as string)
+      const response = await booksService.getById(params.id as string)
       setBook(response.data.data || response.data)
     } catch (error) {
       console.error('Failed to load book:', error)
@@ -61,7 +60,7 @@ export default function BookDetailPage() {
 
   const checkIfRequested = async () => {
     try {
-      const response = await booksAPI.checkRequested(params.id as string)
+      const response = await booksService.checkRequested(params.id as string)
       setIsRequested(response.data.data?.requested || response.data.requested || false)
     } catch (error) {
       console.error('Failed to check request status:', error)
@@ -70,7 +69,7 @@ export default function BookDetailPage() {
 
   const loadReadingStatus = async () => {
     try {
-      const response = await handoverAPI.getReadingStatus(params.id as string)
+      const response = await handoverService.getReadingStatus(params.id as string)
       setReadingStatus(response.data.data || response.data)
     } catch (error) {
       // Not the current holder, ignore
@@ -80,7 +79,7 @@ export default function BookDetailPage() {
 
   const loadHandoverThread = async () => {
     try {
-      const response = await handoverAPI.getActiveHandoverThread(params.id as string)
+      const response = await handoverService.getActiveHandoverThread(params.id as string)
       setHandoverThread(response.data.data || response.data)
     } catch (error) {
       setHandoverThread(null)
@@ -96,7 +95,7 @@ export default function BookDetailPage() {
       confirmColor: 'green',
       onConfirm: async () => {
         try {
-          await handoverAPI.markBookCompleted(params.id as string)
+          await handoverService.markBookCompleted(params.id as string)
           success('Book marked as completed!')
           loadReadingStatus()
           loadHandoverThread()
@@ -116,7 +115,7 @@ export default function BookDetailPage() {
       confirmColor: 'green',
       onConfirm: async () => {
         try {
-          await handoverAPI.markBookDelivered(params.id as string)
+          await handoverService.markBookDelivered(params.id as string)
           success('Book marked as delivered!')
           loadReadingStatus()
           loadHandoverThread()
@@ -130,7 +129,7 @@ export default function BookDetailPage() {
 
   const loadIdeas = async () => {
     try {
-      const response = await ideasAPI.getByBook(params.id as string)
+      const response = await ideasService.getByBook(params.id as string)
       const ideasData = response.data.data || response.data || []
       setIdeas(Array.isArray(ideasData) ? ideasData : [])
     } catch (error) {
@@ -141,7 +140,7 @@ export default function BookDetailPage() {
 
   const loadReviews = async () => {
     try {
-      const response = await reviewsAPI.getByBook(params.id as string)
+      const response = await reviewsService.getByBook(params.id as string)
       const reviewsData = response.data.data || response.data || []
       setReviews(Array.isArray(reviewsData) ? reviewsData : [])
     } catch (error) {
@@ -156,7 +155,7 @@ export default function BookDetailPage() {
       return
     }
     try {
-      await booksAPI.request(params.id as string)
+      await booksService.request(params.id as string)
       success('Book requested successfully!')
       setIsRequested(true)
       loadBook()
@@ -167,7 +166,7 @@ export default function BookDetailPage() {
 
   const handleCancelRequest = async () => {
     try {
-      await booksAPI.cancelRequest(params.id as string)
+      await booksService.cancelRequest(params.id as string)
       success('Request cancelled successfully!')
       setIsRequested(false)
       loadBook()
@@ -179,7 +178,7 @@ export default function BookDetailPage() {
   const handleSubmitIdea = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await ideasAPI.create({
+      await ideasService.create({
         book_id: params.id as string,
         ...ideaForm,
       })
@@ -194,7 +193,7 @@ export default function BookDetailPage() {
 
   const handleVote = async (ideaId: string, voteType: 'upvote' | 'downvote') => {
     try {
-      await ideasAPI.vote(ideaId, voteType)
+      await ideasService.vote(ideaId, voteType)
       success('Vote recorded!')
       loadIdeas()
     } catch (err: any) {
