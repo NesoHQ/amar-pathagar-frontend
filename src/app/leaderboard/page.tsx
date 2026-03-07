@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { userAPI } from '@/lib/api'
+import { userService } from '@/services'
 
 export default function LeaderboardPage() {
   const router = useRouter()
@@ -21,7 +21,7 @@ export default function LeaderboardPage() {
 
   const loadLeaderboard = async () => {
     try {
-      const response = await userAPI.getLeaderboard()
+      const response = await userService.getLeaderboard()
       const data = response.data.data || response.data || []
       setLeaders(Array.isArray(data) ? data : [])
     } catch (err: any) {

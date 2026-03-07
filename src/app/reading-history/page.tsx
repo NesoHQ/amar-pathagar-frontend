@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { booksAPI } from '@/lib/api'
+import { booksService } from '@/services'
 
 export default function ReadingHistoryPage() {
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function ReadingHistoryPage() {
 
   const loadHistory = async () => {
     try {
-      const response = await booksAPI.getMyReadingHistory()
+      const response = await booksService.getMyReadingHistory()
       const historyData = response.data.data || response.data || []
       setHistory(Array.isArray(historyData) ? historyData : [])
     } catch (error) {
@@ -37,7 +37,7 @@ export default function ReadingHistoryPage() {
 
   const loadHoldingBooks = async () => {
     try {
-      const response = await booksAPI.getMyBooksOnHold()
+      const response = await booksService.getMyBooksOnHold()
       const booksData = response.data.data || response.data || []
       setHoldingBooks(Array.isArray(booksData) ? booksData : [])
     } catch (error) {

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { authAPI } from "@/lib/api";
+import { authService } from "@/services";
 import { useAuthStore } from "@/store/authStore";
 import { useToastStore } from "@/store/toastStore";
 import { ToastContainer } from "@/components/toast";
@@ -20,12 +20,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Check for session expiry on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const expired = searchParams.get('expired');
+    
+    if (expired === 'true') {
+      showError('Session expired. Please login again.');
+      // Clean up URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('expired');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [showError]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await authAPI.login(formData);
+      const response = await authService.login(formData);
       const { data } = response.data;
       const { user, access_token } = data;
       setAuth(user, access_token);

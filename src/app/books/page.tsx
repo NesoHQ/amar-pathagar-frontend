@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { booksAPI, bookmarksAPI } from '@/lib/api'
+import { booksService, bookmarksService } from '@/services'
 
 interface Book {
   id: string
@@ -37,7 +37,7 @@ export default function BooksPage() {
 
   const loadBooks = async () => {
     try {
-      const response = await booksAPI.getAll({ search, status: statusFilter })
+      const response = await booksService.getAll({ search, status: statusFilter })
       const booksData = response.data.data || response.data || []
       setBooks(Array.isArray(booksData) ? booksData : [])
     } catch (error) {
@@ -54,7 +54,7 @@ export default function BooksPage() {
 
   const handleBookmark = async (bookId: string, type: string) => {
     try {
-      await bookmarksAPI.create({ book_id: bookId, bookmark_type: type })
+      await bookmarksService.create({ book_id: bookId, bookmark_type: type })
       success(`Book ${type}ed successfully!`)
     } catch (err: any) {
       error(err.response?.data?.error || 'Failed to bookmark book')

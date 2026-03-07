@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { reviewsAPI, booksAPI } from '@/lib/api'
+import { reviewsService, booksService } from '@/services'
 
 export default function ReviewsPage() {
   const router = useRouter()
@@ -31,7 +31,7 @@ export default function ReviewsPage() {
 
   const loadMyCurrentBooks = async () => {
     try {
-      const response = await booksAPI.getAll()
+      const response = await booksService.getAll()
       const books = response.data.data || []
       // Get books user currently has or has returned
       // For now, we'll show books the user currently has
@@ -59,7 +59,7 @@ export default function ReviewsPage() {
     console.log('Submitting review:', reviewForm)
 
     try {
-      await reviewsAPI.create(reviewForm)
+      await reviewsService.create(reviewForm)
       success('Review submitted successfully!')
       setShowReviewForm(false)
       setReviewForm({

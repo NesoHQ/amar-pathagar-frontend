@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { useToastStore } from '@/store/toastStore'
-import { userAPI } from '@/lib/api'
+import { userService } from '@/services'
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -52,7 +52,7 @@ export default function EditProfilePage() {
       if (profileForm.location_lat) data.location_lat = parseFloat(profileForm.location_lat)
       if (profileForm.location_lng) data.location_lng = parseFloat(profileForm.location_lng)
 
-      const response = await userAPI.updateProfile(data)
+      const response = await userService.updateProfile(data)
       const updatedUser = response.data.data || response.data
       
       // Update user in store
@@ -71,7 +71,7 @@ export default function EditProfilePage() {
     if (!newInterest.trim()) return
 
     try {
-      await userAPI.addInterests([newInterest.trim()])
+      await userService.addInterests([newInterest.trim()])
       setInterests([...interests, newInterest.trim()])
       setNewInterest('')
       success('Interest added!')
