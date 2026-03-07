@@ -37,11 +37,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth-storage')
-        window.location.href = '/login'
+        // Don't clear storage here - let proxy handle redirects
+        // Just redirect to login
+        const currentPath = window.location.pathname
+        if (currentPath !== '/login' && currentPath !== '/register') {
+          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+        }
       }
     }
-    // Don't show alert, let components handle errors
     return Promise.reject(error)
   }
 )

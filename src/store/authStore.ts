@@ -63,6 +63,10 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
+        // Sync cookie with localStorage on hydration
+        if (state?.accessToken) {
+          setAuthCookie(state.accessToken)
+        }
         state?.setHasHydrated(true)
       },
     }
