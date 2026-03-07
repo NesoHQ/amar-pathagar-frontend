@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { setAuthCookie, removeAuthCookie } from '@/utils/auth'
 
 interface User {
   id: string
@@ -42,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
       
       setAuth: (user, accessToken) => {
         set({ user, accessToken, isAuthenticated: true })
+        setAuthCookie(accessToken)
       },
       
       setUser: (user) => {
@@ -50,6 +52,7 @@ export const useAuthStore = create<AuthState>()(
       
       logout: () => {
         set({ user: null, accessToken: null, isAuthenticated: false })
+        removeAuthCookie()
       },
 
       setHasHydrated: (state) => {
