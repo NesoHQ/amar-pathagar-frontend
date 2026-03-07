@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
 import { BooksFilters } from '@/components/books/books.filters';
@@ -10,6 +10,7 @@ import { PageHeader } from '@/components/common/page.header';
 import { useInfiniteScroll } from '@/hooks/use.infinite.scroll';
 import { syncFiltersToUrl } from '@/utils/url.params';
 import { MOCK_BOOKS_LIST, filterBooks, paginateBooks, type BookListItem } from '@/constants/books.list';
+import { MOCK_CATEGORIES } from '@/constants/categories';
 
 interface Book extends BookListItem {}
 
@@ -24,11 +25,18 @@ interface PaginationMeta {
   prevPage: number | null;
 }
 
-export default function BooksPage() {
+export default function CategoryBooksPage() {
   const router = useRouter();
+  const params = useParams();
   const searchParams = useSearchParams();
   const { _hasHydrated } = useAuthStore();
   const { error } = useToastStore();
+
+  const categorySlug = params.slug as string;
+  
+  // Find category info
+  const category = MOCK_CATEGORIES.find(cat => cat.slug === categorySlug);
+  const categoryName = category?.name || categorySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   // State
   const [books, setBooks] = useState<Book[]>([]);
@@ -36,10 +44,10 @@ export default function BooksPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   
-  // Filters from URL
+  // Filters from URL (category is pre-set from route)
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
-    category: searchParams.get('category') || '',
+    category: categorySlug,
     status: searchParams.get('status') || '',
     sort: searchParams.get('sort') || 'relevance',
   });
@@ -102,21 +110,24 @@ export default function BooksPage() {
 
   // Handle filter change
   const handleFilterChange = (key: string, value: string) => {
+    // Don't allow changing category from filters
+    if (key === 'category') return;
+    
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    syncFiltersToUrl(newFilters, router, '/books');
+    syncFiltersToUrl(newFilters, router, `/books/category/${categorySlug}`);
   };
 
-  // Clear all filters
+  // Clear all filters (except category)
   const handleClearFilters = () => {
     const clearedFilters = {
       search: '',
-      category: '',
+      category: categorySlug,
       status: '',
       sort: 'relevance',
     };
     setFilters(clearedFilters);
-    syncFiltersToUrl(clearedFilters, router, '/books');
+    syncFiltersToUrl(clearedFilters, router, `/books/category/${categorySlug}`);
   };
 
   // Load books when filters change
@@ -135,11 +146,12 @@ export default function BooksPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8 pt-6 md:pt-8">
         {/* Page Header with Breadcrumbs */}
         <PageHeader
-          title="Book Collection"
-          description={pagination ? `${pagination.total} books available` : 'Loading...'}
+          title={categoryName}
+          description={pagination ? `${pagination.total} books in this category` : 'Loading...'}
           breadcrumbs={[
             { label: 'Home', href: '/' },
-            { label: 'Books' },
+            { label: 'Books', href: '/books' },
+            { label: categoryName },
           ]}
         />
 
@@ -152,6 +164,7 @@ export default function BooksPage() {
               onFilterChange={handleFilterChange}
               onClearFilters={handleClearFilters}
               totalBooks={pagination?.total || 0}
+              hideCategory={true}
             />
           </aside>
 
@@ -191,18 +204,31 @@ export default function BooksPage() {
                   No Books Found
                 </p>
                 <p className="text-xs md:text-sm mb-6 md:mb-8" style={{ color: 'var(--muted-foreground)' }}>
-                  Try adjusting your filters
+                  Try adjusting your filters or browse all books
                 </p>
-                <button
-                  onClick={handleClearFilters}
-                  className="px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-medium rounded-lg transition-all hover:opacity-90"
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)',
-                  }}
-                >
-                  Clear All Filters
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+                  <button
+                    onClick={handleClearFilters}
+                    className="px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-medium rounded-lg transition-all hover:opacity-90"
+                    style={{
+                      backgroundColor: 'var(--primary)',
+                      color: 'var(--primary-foreground)',
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={() => router.push('/books')}
+                    className="px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-medium rounded-lg transition-all hover:opacity-90"
+                    style={{
+                      backgroundColor: 'var(--muted)',
+                      color: 'var(--foreground)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    Browse All Books
+                  </button>
+                </div>
               </div>
             ) : (
               <>

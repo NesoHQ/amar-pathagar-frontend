@@ -13,9 +13,9 @@ interface LogoProps {
 export function Logo({ size = 'nav', className = '', variant = 'default' }: LogoProps) {
   // Size configurations
   const sizeConfig = {
-    nav: { height: 32, fontSize: 'text-2xl', textSize: 'text-xl' },
+    nav: { height: 32, fontSize: 'text-lg md:text-2xl', textSize: 'text-base md:text-xl' },
     footer: { height: 40, fontSize: 'text-3xl', textSize: 'text-2xl' },
-    mobile: { height: 28, fontSize: 'text-xl', textSize: 'text-lg' },
+    mobile: { height: 28, fontSize: 'text-xl', textSize: 'text-md' },
   };
   
   const config = sizeConfig[size];
@@ -45,7 +45,7 @@ export function Logo({ size = 'nav', className = '', variant = 'default' }: Logo
         </span>
         {size !== 'mobile' && (
           <span 
-            className="text-xs uppercase tracking-wider transition-colors"
+            className="text-[10px] md:text-xs uppercase tracking-wider transition-colors"
             style={{ color: subtitleColor }}
           >
             Community Library
