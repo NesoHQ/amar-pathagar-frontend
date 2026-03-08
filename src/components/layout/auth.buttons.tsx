@@ -12,14 +12,14 @@ export function AuthButtons({ onLogin, onSignUp, variant = 'desktop' }: AuthButt
       <Button 
         variant="outline" 
         size="sm"
-        className={`rounded-lg font-medium transition-all duration-200 text-xs md:text-sm px-2.5 md:px-4 py-1.5 md:py-2 h-7 md:h-9 whitespace-nowrap ${isFullWidth ? 'w-full' : ''}`}
+        className={`rounded-lg font-medium transition-all duration-200 text-xs md:text-sm px-2.5 md:px-4 py-1 md:py-2 h-7 md:h-9 whitespace-nowrap ${isFullWidth ? 'w-full' : ''}`}
         onClick={onLogin}
       >
         Login
       </Button>
       <Button 
         size="sm"
-        className={`rounded-lg font-medium transition-all duration-200 text-xs md:text-sm px-2.5 md:px-4 py-1.5 md:py-2 h-7 md:h-9 whitespace-nowrap ${isFullWidth ? 'w-full' : ''}`}
+        className={`rounded-lg font-medium transition-all duration-200 text-xs md:text-sm px-2.5 md:px-4 py-1 md:py-2 h-7 md:h-9 whitespace-nowrap ${isFullWidth ? 'w-full' : ''}`}
         onClick={onSignUp}
       >
         Sign Up
