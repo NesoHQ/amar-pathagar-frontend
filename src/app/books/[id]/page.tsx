@@ -10,6 +10,7 @@ import { LoginPromptDialog } from '@/components/ui/dynamic.dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DynamicTabs, DynamicTabContent } from '@/components/ui/dynamic.tabs';
+import { useInfiniteScroll } from '@/hooks/use.infinite.scroll';
 import ConfirmModal from '@/components/confirm.modal';
 import { Loader } from '@/components/ui/loader';
 
@@ -30,6 +31,8 @@ export default function BookDetailPage() {
   const [reviewSort, setReviewSort] = useState<'recent' | 'highest' | 'lowest'>('recent');
   const [discussionSort, setDiscussionSort] = useState<'recent' | 'popular'>('recent');
   const [activeTab, setActiveTab] = useState('reviews');
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [isLoadingDiscussions, setIsLoadingDiscussions] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -88,6 +91,40 @@ export default function BookDetailPage() {
     }));
     return { total, avgRating, distribution };
   }, [reviews]);
+
+  // Infinite scroll for reviews
+  const loadMoreReviews = () => {
+    if (isLoadingReviews) return;
+    setIsLoadingReviews(true);
+    setTimeout(() => {
+      setReviewsToShow(prev => prev + 3);
+      setIsLoadingReviews(false);
+    }, 300); // Simulate loading delay
+  };
+
+  const { observerTarget: reviewsObserverTarget } = useInfiniteScroll({
+    onLoadMore: loadMoreReviews,
+    hasMore: sortedReviews.length > reviewsToShow,
+    isLoading: isLoadingReviews,
+    threshold: 200,
+  });
+
+  // Infinite scroll for discussions
+  const loadMoreDiscussions = () => {
+    if (isLoadingDiscussions) return;
+    setIsLoadingDiscussions(true);
+    setTimeout(() => {
+      setDiscussionsToShow(prev => prev + 5);
+      setIsLoadingDiscussions(false);
+    }, 300); // Simulate loading delay
+  };
+
+  const { observerTarget: discussionsObserverTarget } = useInfiniteScroll({
+    onLoadMore: loadMoreDiscussions,
+    hasMore: sortedDiscussions.length > discussionsToShow,
+    isLoading: isLoadingDiscussions,
+    threshold: 200,
+  });
 
   useEffect(() => {
     if (_hasHydrated && params.id) {
@@ -574,15 +611,15 @@ export default function BookDetailPage() {
               ))}
             </div>
 
+            {/* Infinite scroll trigger */}
             {sortedReviews.length > reviewsToShow && (
-              <div className="text-center animate-fadeInUp">
-                <Button
-                  onClick={() => setReviewsToShow(prev => prev + 3)}
-                  variant="outline"
-                  className="w-full sm:w-auto transition-all duration-300 hover:scale-105"
-                >
-                  Load More Reviews ({sortedReviews.length - reviewsToShow} remaining)
-                </Button>
+              <div ref={reviewsObserverTarget} className="flex justify-center py-4">
+                {isLoadingReviews && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
+                    <span>Loading more reviews...</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -718,15 +755,15 @@ export default function BookDetailPage() {
                   ))}
                 </div>
 
+                {/* Infinite scroll trigger */}
                 {sortedDiscussions.length > discussionsToShow && (
-                  <div className="text-center animate-fadeInUp">
-                    <Button
-                      onClick={() => setDiscussionsToShow(prev => prev + 5)}
-                      variant="outline"
-                      className="w-full sm:w-auto transition-all duration-300 hover:scale-105"
-                    >
-                      Load More Discussions ({sortedDiscussions.length - discussionsToShow} remaining)
-                    </Button>
+                  <div ref={discussionsObserverTarget} className="flex justify-center py-4">
+                    {isLoadingDiscussions && (
+                      <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: 'var(--primary)' }}></div>
+                        <span>Loading more discussions...</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
