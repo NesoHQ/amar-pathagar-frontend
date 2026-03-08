@@ -1,12 +1,5 @@
 import { Loader } from '@/components/ui/loader';
 
 export default function Loading() {
-  return (
-    <div 
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: 'var(--background)' }}
-    >
-      <Loader size="lg" />
-    </div>
-  );
+  return <Loader size="lg" fullScreen />;
 }

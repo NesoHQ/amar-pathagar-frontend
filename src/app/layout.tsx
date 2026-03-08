@@ -15,6 +15,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* Theme initialization script - runs before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('app-theme') || 'default';
+                  if (['default', 'dark', 'reading'].includes(theme)) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="flex flex-col min-h-screen">
         {/* SVG Filter for hand-drawn/pencil effect */}
         <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
