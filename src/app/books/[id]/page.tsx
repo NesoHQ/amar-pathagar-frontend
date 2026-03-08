@@ -373,12 +373,7 @@ export default function BookDetailPage() {
 
   if (!_hasHydrated || !book) {
     return (
-    <div 
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: 'var(--background)' }}
-    >
-      <Loader size="lg" />
-    </div>
+      <Loader size="lg" fullScreen/>
     );
   }
 

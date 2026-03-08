@@ -9,6 +9,7 @@ interface LoaderProps {
   size?: LoaderSize;
   text?: string;
   className?: string;
+  fullScreen?: boolean;
 }
 
 const sizeMap: Record<LoaderSize, number> = {
@@ -17,32 +18,55 @@ const sizeMap: Record<LoaderSize, number> = {
   lg: 72,
 };
 
-export function Loader({ size = 'md', text = 'Loading...', className }: LoaderProps) {
+export function Loader({ 
+  size = 'md', 
+  text = 'Loading...', 
+  className,
+  fullScreen = false 
+}: LoaderProps) {
   const iconSize = sizeMap[size];
 
-  return (
+  const content = (
     <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
       <div
         className="animate-book-flip"
         style={{
           width: iconSize,
           height: iconSize,
+          color: 'var(--foreground)',
         }}
       >
         <BookOpen
           style={{
             width: iconSize,
             height: iconSize,
-            color: 'var(--foreground)',
           }}
         />
       </div>
-      <p
+      <p 
         className="text-sm font-medium animate-pulse"
-        style={{ color: 'var(--muted-foreground)' }}
+        style={{
+          color: 'var(--muted-foreground)',
+        }}
       >
         {text}
       </p>
     </div>
   );
+
+  if (fullScreen) {
+    return (
+      <div 
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{
+          backgroundColor: 'var(--background)',
+          color: 'var(--foreground)',
+        }}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 }
