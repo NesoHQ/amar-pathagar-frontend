@@ -1,32 +1,7 @@
 'use client';
 
-/**
- * DynamicTabs Component
- * 
- * A reusable, sophisticated tabs component with mobile-first design.
- * Features:
- * - Responsive design (horizontal scroll on mobile, full width on desktop)
- * - Badge support for counts
- * - Icon support
- * - Active state indicators
- * - Theme-aware styling
- * 
- * Usage:
- * ```tsx
- * <DynamicTabs
- *   defaultValue="tab1"
- *   tabs={[
- *     { value: 'tab1', label: 'Tab 1', count: 5, icon: '📝' },
- *     { value: 'tab2', label: 'Tab 2', count: 10 }
- *   ]}
- * >
- *   <DynamicTabContent value="tab1">Content 1</DynamicTabContent>
- *   <DynamicTabContent value="tab2">Content 2</DynamicTabContent>
- * </DynamicTabs>
- * ```
- */
 
-import { useState, ReactNode } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 interface Tab {
@@ -59,106 +34,218 @@ export function DynamicTabs({
   onTabChange 
 }: DynamicTabsProps) {
   const [activeTab, setActiveTab] = useState(defaultValue);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (value: string, index: number) => {
     setActiveTab(value);
     onTabChange?.(value);
+    updateIndicator(index);
   };
+
+  const updateIndicator = (index: number) => {
+    const tab = tabRefs.current[index];
+    if (tab) {
+      setIndicatorStyle({
+        left: tab.offsetLeft,
+        width: tab.offsetWidth,
+      });
+    }
+  };
+
+  useEffect(() => {
+    const activeIndex = tabs.findIndex(tab => tab.value === defaultValue);
+    if (activeIndex !== -1) {
+      updateIndicator(activeIndex);
+    }
+  }, [defaultValue, tabs]);
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Tab List */}
+      {/* Tab List Container */}
       <div className="relative mb-6">
-        {/* Mobile: Horizontal scroll */}
-        <div className="md:hidden overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 pb-2 min-w-max px-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => !tab.disabled && handleTabChange(tab.value)}
-                disabled={tab.disabled}
-                className={`
-                  flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm
-                  transition-all duration-200 whitespace-nowrap
-                  ${activeTab === tab.value
-                    ? 'shadow-md'
-                    : 'hover:shadow-sm'
-                  }
-                  ${tab.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                style={{
-                  backgroundColor: activeTab === tab.value ? 'var(--primary)' : 'var(--card)',
-                  color: activeTab === tab.value ? 'var(--primary-foreground)' : 'var(--foreground)',
-                  borderWidth: '2px',
-                  borderStyle: 'solid',
-                  borderColor: activeTab === tab.value ? 'var(--primary)' : 'var(--border)',
-                }}
-              >
-                {tab.icon && <span className="text-base">{tab.icon}</span>}
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <Badge 
-                    variant={activeTab === tab.value ? 'secondary' : 'outline'}
-                    className="text-xs px-1.5 py-0 h-5 min-w-[20px]"
-                  >
-                    {tab.count}
-                  </Badge>
-                )}
-              </button>
-            ))}
+        {/* Background Card */}
+        <div 
+          className="rounded-lg p-0.5 md:p-1"
+          style={{ 
+            backgroundColor: 'var(--muted)',
+            border: '1px solid var(--border)'
+          }}
+        >
+          {/* Mobile: 2 column grid */}
+          <div className="md:hidden">
+            <div className="grid grid-cols-2 gap-1">
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.value}
+                  ref={(el) => { tabRefs.current[index] = el; }}
+                  onClick={() => !tab.disabled && handleTabChange(tab.value, index)}
+                  disabled={tab.disabled}
+                  className={`
+                    relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg
+                    font-medium text-sm transition-all duration-300
+                    ${activeTab === tab.value
+                      ? 'text-(--primary-foreground)'
+                      : 'text-(--muted-foreground) hover:text-(--foreground)'
+                    }
+                    ${tab.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                  style={{
+                    zIndex: activeTab === tab.value ? 2 : 1,
+                  }}
+                >
+                  {/* Active background */}
+                  {activeTab === tab.value && (
+                    <div 
+                      className="absolute inset-0 rounded-lg shadow-md"
+                      style={{ 
+                        backgroundColor: 'var(--primary)',
+                        animation: 'scaleIn 0.2s ease-out'
+                      }}
+                    />
+                  )}
+                  
+                  {/* Content */}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {tab.icon && (
+                      <span className={`text-base transition-transform duration-300 ${
+                        activeTab === tab.value ? 'scale-110' : 'scale-100'
+                      }`}>
+                        {tab.icon}
+                      </span>
+                    )}
+                    <span className="font-semibold">{tab.label}</span>
+                    {tab.count !== undefined && (
+                      <Badge 
+                        className={`
+                          text-xs px-2 py-0 h-5 min-w-[24px] font-bold
+                          transition-all duration-300
+                          ${activeTab === tab.value 
+                            ? 'bg-(--primary-foreground) text-(--primary) border-0' 
+                            : 'bg-(--background) text-(--foreground) border border-(--border)'
+                          }
+                        `}
+                      >
+                        {tab.count}
+                      </Badge>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Ultra-minimal compact design */}
+          <div className="hidden md:block">
+            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+              {tabs.map((tab, index) => (
+                <button
+                  key={tab.value}
+                  ref={(el) => { tabRefs.current[index] = el; }}
+                  onClick={() => !tab.disabled && handleTabChange(tab.value, index)}
+                  disabled={tab.disabled}
+                  className={`
+                    relative flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg
+                    font-medium text-xs transition-all duration-300
+                    ${activeTab === tab.value
+                      ? 'text-(--primary-foreground)'
+                      : 'text-(--muted-foreground) hover:text-(--foreground) hover:bg-(--background)/30'
+                    }
+                    ${tab.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                  style={{
+                    zIndex: activeTab === tab.value ? 2 : 1,
+                  }}
+                >
+                  {/* Active background */}
+                  {activeTab === tab.value && (
+                    <div 
+                      className="absolute inset-0 rounded-lg shadow-sm"
+                      style={{ 
+                        backgroundColor: 'var(--primary)',
+                        animation: 'scaleIn 0.2s ease-out'
+                      }}
+                    />
+                  )}
+                  
+                  {/* Content */}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    {tab.icon && (
+                      <span className={`text-sm transition-all duration-300 ${
+                        activeTab === tab.value ? 'scale-105' : 'scale-100'
+                      }`}>
+                        {tab.icon}
+                      </span>
+                    )}
+                    <span className="font-semibold">{tab.label}</span>
+                    {tab.count !== undefined && (
+                      <Badge 
+                        className={`
+                          text-[10px] px-1.5 py-0 h-4 min-w-[20px] font-bold
+                          transition-all duration-300
+                          ${activeTab === tab.value 
+                            ? 'bg-(--primary-foreground) text-(--primary) border-0' 
+                            : 'bg-(--background) text-(--foreground) border border-(--border)'
+                          }
+                        `}
+                      >
+                        {tab.count}
+                      </Badge>
+                    )}
+                  </span>
+
+                  {/* Subtle hover effect */}
+                  {activeTab !== tab.value && !tab.disabled && (
+                    <div 
+                      className="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-200"
+                      style={{ 
+                        backgroundColor: 'var(--background)',
+                        opacity: 0.3
+                      }}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Desktop: Full width grid */}
-        <div className="hidden md:grid gap-2" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => !tab.disabled && handleTabChange(tab.value)}
-              disabled={tab.disabled}
-              className={`
-                flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium text-sm
-                transition-all duration-200 relative
-                ${activeTab === tab.value
-                  ? 'shadow-md'
-                  : 'hover:shadow-sm'
-                }
-                ${tab.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-              style={{
-                backgroundColor: activeTab === tab.value ? 'var(--primary)' : 'var(--card)',
-                color: activeTab === tab.value ? 'var(--primary-foreground)' : 'var(--foreground)',
-                borderWidth: '2px',
-                borderStyle: 'solid',
-                borderColor: activeTab === tab.value ? 'var(--primary)' : 'var(--border)',
-              }}
-            >
-              {tab.icon && <span className="text-lg">{tab.icon}</span>}
-              <span>{tab.label}</span>
-              {tab.count !== undefined && (
-                <Badge 
-                  variant={activeTab === tab.value ? 'secondary' : 'outline'}
-                  className="text-xs px-2 py-0 h-5 min-w-[24px]"
-                >
-                  {tab.count}
-                </Badge>
-              )}
-              {/* Active indicator */}
-              {activeTab === tab.value && (
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-1 rounded-t-full"
-                  style={{ backgroundColor: 'var(--primary-foreground)' }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Tab Content */}
-      <div>
+      {/* Tab Content with smooth fade and slide animation */}
+      <div 
+        key={activeTab}
+        className="animate-fadeSlideIn"
+      >
         {children}
       </div>
+
+      <style jsx>{`
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeSlideIn {
+          animation: fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `}</style>
     </div>
   );
 }

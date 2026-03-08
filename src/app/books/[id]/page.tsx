@@ -504,13 +504,17 @@ export default function BookDetailPage() {
                     </div>
                   </div>
                   <div className="flex-1 max-w-xs ml-8 space-y-2">
-                    {reviewStats.distribution.map(({ rating, count, percentage }) => (
+                    {reviewStats.distribution.map(({ rating, count, percentage }, index) => (
                       <div key={rating} className="flex items-center gap-2 text-sm">
                         <span className="w-8">{rating}★</span>
                         <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--muted)' }}>
                           <div
-                            className="h-full bg-yellow-500"
-                            style={{ width: `${percentage}%` }}
+                            className="h-full bg-yellow-500 transition-all duration-700 ease-out"
+                            style={{ 
+                              width: `${percentage}%`,
+                              animationDelay: `${index * 100}ms`,
+                              animation: 'expandWidth 0.8s ease-out forwards'
+                            }}
                           />
                         </div>
                         <span className="w-8 text-right" style={{ color: 'var(--muted-foreground)' }}>
@@ -528,7 +532,7 @@ export default function BookDetailPage() {
               <select
                 value={reviewSort}
                 onChange={(e) => setReviewSort(e.target.value as any)}
-                className="px-3 py-1.5 border rounded-lg text-sm"
+                className="px-3 py-1.5 border rounded-lg text-sm transition-all duration-200 hover:border-(--primary) focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
                 style={{ borderColor: 'var(--border)', backgroundColor: 'var(--background)' }}
               >
                 <option value="recent">Most Recent</option>
@@ -538,11 +542,15 @@ export default function BookDetailPage() {
             </div>
 
             <div className="space-y-4">
-              {sortedReviews.slice(0, reviewsToShow).map((review) => (
+              {sortedReviews.slice(0, reviewsToShow).map((review, index) => (
                 <div
                   key={review.id}
-                  className="border rounded-lg p-4"
-                  style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+                  className="border rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:scale-[1.01]"
+                  style={{ 
+                    borderColor: 'var(--border)', 
+                    backgroundColor: 'var(--card)',
+                    animation: `fadeInUp 0.4s ease-out ${index * 0.05}s both`
+                  }}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -567,11 +575,11 @@ export default function BookDetailPage() {
             </div>
 
             {sortedReviews.length > reviewsToShow && (
-              <div className="text-center">
+              <div className="text-center animate-fadeInUp">
                 <Button
                   onClick={() => setReviewsToShow(prev => prev + 3)}
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto transition-all duration-300 hover:scale-105"
                 >
                   Load More Reviews ({sortedReviews.length - reviewsToShow} remaining)
                 </Button>
@@ -597,7 +605,7 @@ export default function BookDetailPage() {
                 <select
                   value={discussionSort}
                   onChange={(e) => setDiscussionSort(e.target.value as any)}
-                  className="px-3 py-1.5 border rounded-lg text-sm"
+                  className="px-3 py-1.5 border rounded-lg text-sm transition-all duration-200 hover:border-(--primary) focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
                   style={{ borderColor: 'var(--border)', backgroundColor: 'var(--background)' }}
                 >
                   <option value="recent">Most Recent</option>
@@ -662,11 +670,15 @@ export default function BookDetailPage() {
             ) : (
               <>
                 <div className="space-y-4">
-                  {sortedDiscussions.slice(0, discussionsToShow).map((idea) => (
+                  {sortedDiscussions.slice(0, discussionsToShow).map((idea, index) => (
                     <div
                       key={idea.id}
-                      className="border rounded-lg p-4"
-                      style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card)' }}
+                      className="border rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:scale-[1.01]"
+                      style={{ 
+                        borderColor: 'var(--border)', 
+                        backgroundColor: 'var(--card)',
+                        animation: `fadeInUp 0.4s ease-out ${index * 0.05}s both`
+                      }}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
@@ -680,7 +692,7 @@ export default function BookDetailPage() {
                             onClick={() => handleVote(idea.id, 'upvote')}
                             variant="outline"
                             size="sm"
-                            className="px-2 py-1 h-auto text-xs"
+                            className="px-2 py-1 h-auto text-xs transition-all duration-200 hover:scale-110 hover:border-green-500"
                           >
                             👍 {idea.upvotes}
                           </Button>
@@ -688,7 +700,7 @@ export default function BookDetailPage() {
                             onClick={() => handleVote(idea.id, 'downvote')}
                             variant="outline"
                             size="sm"
-                            className="px-2 py-1 h-auto text-xs"
+                            className="px-2 py-1 h-auto text-xs transition-all duration-200 hover:scale-110 hover:border-red-500"
                           >
                             👎 {idea.downvotes}
                           </Button>
@@ -707,11 +719,11 @@ export default function BookDetailPage() {
                 </div>
 
                 {sortedDiscussions.length > discussionsToShow && (
-                  <div className="text-center">
+                  <div className="text-center animate-fadeInUp">
                     <Button
                       onClick={() => setDiscussionsToShow(prev => prev + 5)}
                       variant="outline"
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto transition-all duration-300 hover:scale-105"
                     >
                       Load More Discussions ({sortedDiscussions.length - discussionsToShow} remaining)
                     </Button>
@@ -739,6 +751,35 @@ export default function BookDetailPage() {
         onClose={() => setLoginPrompt({ ...loginPrompt, isOpen: false })}
         action={loginPrompt.action}
       />
+
+      {/* Global Animations */}
+      <style jsx global>{`
+        @keyframes expandWidth {
+          from {
+            width: 0;
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
+        }
+      `}</style>
     </div>
   );
 }
